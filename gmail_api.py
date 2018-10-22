@@ -38,7 +38,6 @@ def main():
         mail.ListMessagesWithLabels([label])
 
 
-
 ''' Convert gmail's internalDate long to a datetime str '''
 def internalDate_to_timestamp(internalDate):
     s = long(internalDate) / 1000.0
@@ -72,8 +71,8 @@ class Message:
 
         return 72*"*"+"\n"+out_str+"\n"+72*"*"
 
+    ''' Parse gmail api's returned message into object we an easily work with '''
     def __init__(self, message):
-        ''' Parse message into object we an easily work with '''
 
         self.id = message['id'].encode('utf-8')
 
@@ -117,7 +116,6 @@ class Mail:
     ''' The user's email address. The special value 'me' used to indicate the authenticated user. '''
     user_id = 'me'
 
-
     ''' Initiate authorized service for gmail API with specified account '''
     def __init__(self):
         store = file.Storage('token.json')
@@ -127,14 +125,13 @@ class Mail:
             creds = tools.run_flow(flow, store)
         self.service = build('gmail', 'v1', http=creds.authorize(Http()))
 
-
+    ''' Get message matching id '''
     def get_message_by_id(self, msg_id):
 
         message = self.service.users().messages().get(userId=self.user_id, id=msg_id['id']).execute()
 
         ''' Parse message and return a new message object '''
         return Message(message)
-
 
     '''Lists the user's Gmail labels'''
     def get_labels(self):
@@ -150,22 +147,8 @@ class Mail:
 
         return labels
 
-
+    ''' List all Messages of the user's mailbox matching the query. '''
     def ListMessagesMatchingQuery(self, query=''):
-        """List all Messages of the user's mailbox matching the query.
-
-        Args:
-        service: Authorized Gmail API service instance.
-        user_id: User's email address. The special value "me"
-        can be used to indicate the authenticated user.
-        query: String used to filter messages returned.
-        Eg.- 'from:user@some_domain.com' for Messages from a particular sender.
-
-        Returns:
-        List of Messages that match the criteria of the query. Note that the
-        returned list contains Message IDs, you must use get with the
-        appropriate ID to get the details of a Message.
-        """
         try:
             response = self.service.users().messages().list(userId=self.user_id,
             q=query).execute()
@@ -189,21 +172,8 @@ class Mail:
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
 
-
+    ''' List all Messages of the user's mailbox with label_ids applied '''
     def ListMessagesWithLabels(self, label_ids=[]):
-        """List all Messages of the user's mailbox with label_ids applied.
-
-        Args:
-        service: Authorized Gmail API service instance.
-        user_id: User's email address. The special value "me"
-        can be used to indicate the authenticated user.
-        label_ids: Only return Messages with these labelIds applied.
-
-        Returns:
-        List of Messages that have all required Labels applied. Note that the
-        returned list contains Message IDs, you must use get with the
-        appropriate id to get the details of a Message.
-        """
         try:
             response = self.service.users().messages().list(userId=self.user_id,
             labelIds=label_ids).execute()
@@ -227,7 +197,6 @@ class Mail:
                 return messages
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
-
 
 
 if __name__ == '__main__':
