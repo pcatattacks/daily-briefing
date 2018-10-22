@@ -9,8 +9,10 @@ For both of these, use the same project to authenticate so that our daily_briefi
 
 You'll have to download a file called 'credentials.json' that you will put in the root directory of this project.
 
-Then run `$python daily_briefing.py` to see a test example 
+Then run `$python daily_briefing.py` to see a test example
 
+## Text-To-Speech
+Need mpg321 installed on your computer. for mac `$brew install mpg321`
 
 ## Virtual Environment Set Up
 To isolate the dependencies we use in our project (so they aren't installed in your whole system and isolated to your project), we will use virtualenv, which is a popular package used to do this.

@@ -1,3 +1,5 @@
+# Daily Breifing: Functional Architecture for Google Calendar
+
 from __future__ import print_function
 from googleapiclient.discovery import build
 from apiclient import errors
@@ -5,7 +7,15 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import datetime
 
-# Daily Breifing: Functional Architecture for Google Calendar
+# text to speech
+# Text to Speech Modules
+from gtts import gTTS
+import os
+
+def speak(string, slow=False):
+    tts = gTTS(text=string, lang='en', slow=slow)
+    tts.save("daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3")
 
 # Each Calendar is a list of Events
 class Calendar:
@@ -44,7 +54,7 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
+            speak(start + event['summary'])
             # print(start, "|", event['status'].upper(),"|", event['location'], "|", event['summary'])
         #     print('----------------------------------------------------------------------')
 

@@ -7,12 +7,21 @@ from apiclient import errors
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+# Text to Speech Modules
+from gtts import gTTS
+import os
+
 ''' Helper Modules '''
 import datetime
 
 ''' Daily Briefing Modules '''
 from gmail_api import *
 from calendar_interface import *
+
+def speak(string, slow=False):
+    tts = gTTS(text=string, lang='en', slow=slow)
+    tts.save("daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3")
 
 
 class DailyBriefing:
@@ -46,27 +55,28 @@ class DailyBriefing:
 
     def test(self):
 
-        print(''' Next 10 evets on the Calendar ''')
-        self.cal.get_next_ten_events()
 
-        print('\n\n')
+        # speak(''' Next 10 events on the Calendar ''')
+        # self.cal.get_next_ten_events()
+        #
+        # print('\n\n')
 
-        print("Listing all labels for this gmail account...\n\n")
-        self.mail.get_labels()
+        # speak("Listing all labels for this gmail account...\n\n")
+        # self.mail.get_labels()
 
-        print('\n\n')
+        # print('\n\n')
 
-        print(''' Query messages by term ''')
-        query_terms = ['hike', 'meet', 'see you']
-        for query in query_terms:
-            print("\n\n Querying messages for \""+ query +"\" ...\n\n")
-            self.mail.ListMessagesMatchingQuery(query)
+        # speak(''' Query messages by term ''')
+        # query_terms = ['hike', 'meet', 'see you']
+        # for query in query_terms:
+        #     speak("\n\n Querying messages for \""+ query +"\" ...\n\n", slow=True )
+        #     self.mail.ListMessagesMatchingQuery(query)
 
-        print(''' Get messages by Label ''')
+        speak(''' Get messages by Label ''')
         label_terms = [u'UNREAD', u'IMPORTANT', u'CATEGORY_PERSONAL', u'STARRED']
 
         for label in label_terms:
-            print("Getting all "+ label+" messages \n\n")
+            speak("Getting all "+ label+" messages \n\n")
             self.mail.ListMessagesWithLabels([label])
 
 

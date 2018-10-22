@@ -5,8 +5,14 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import datetime
 
-# from daily_briefing import *
+# text to speech
+from gtts import gTTS
+import os
 
+def speak(string, slow=False):
+    tts = gTTS(text=string, lang='en', slow=slow)
+    tts.save("daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3")
 
 # import base64
 # import email
@@ -45,9 +51,9 @@ class Message:
         subject: {}
         snippet: {}
         '''.format(self.id, self.timestamp, self.labels, self.sender,
-        self.recipients, self.subject, self.snippet)
+        self.recipients, self.subject, self.snippet).encode('utf-8')
 
-        return 72*"*"+"\n"+out_str+"\n"+72*"*"
+        return out_str
 
     ''' Parse gmail api's returned message into object we an easily work with '''
     def __init__(self, message):
@@ -82,8 +88,9 @@ class Message:
 
         # TODO Depending on mimetype, we will parse the body differently
 
-        print(self)
-
+        # print(self)
+        # print(72*"*"+"\n")
+        speak(repr(self))
 
 
 class Mail:
