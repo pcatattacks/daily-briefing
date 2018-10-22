@@ -21,7 +21,7 @@ from calendar_interface import *
 def speak(string, slow=False):
     tts = gTTS(text=string, lang='en', slow=slow)
     tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3 -q")
 
 
 class DailyBriefing:
@@ -72,8 +72,8 @@ class DailyBriefing:
         #     speak("\n\n Querying messages for \""+ query +"\" ...\n\n", slow=True )
         #     self.mail.ListMessagesMatchingQuery(query)
 
-        speak(''' Get messages by Label ''')
-        label_terms = [u'UNREAD', u'IMPORTANT', u'CATEGORY_PERSONAL', u'STARRED']
+        # speak(''' Get messages by Label ''')
+        label_terms = ['IMPORTANT', 'CATEGORY_PERSONAL', 'STARRED', 'UNREAD']
 
         for label in label_terms:
             speak("Getting all "+ label+" messages \n\n")

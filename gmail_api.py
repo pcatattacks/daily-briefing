@@ -12,7 +12,7 @@ import os
 def speak(string, slow=False):
     tts = gTTS(text=string, lang='en', slow=slow)
     tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3 -q")
 
 # import base64
 # import email
@@ -51,7 +51,7 @@ class Message:
         subject: {}
         snippet: {}
         '''.format(self.id, self.timestamp, self.labels, self.sender,
-        self.recipients, self.subject, self.snippet).encode('utf-8')
+        self.recipients, self.subject, self.snippet).decode('utf-8').encode('ascii')
 
         return out_str
 
@@ -88,9 +88,9 @@ class Message:
 
         # TODO Depending on mimetype, we will parse the body differently
 
-        # print(self)
-        # print(72*"*"+"\n")
+        print(self)
         speak(repr(self))
+        print(72*"*"+"\n")
 
 
 class Mail:

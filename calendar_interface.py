@@ -15,7 +15,7 @@ import os
 def speak(string, slow=False):
     tts = gTTS(text=string, lang='en', slow=slow)
     tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3 -q")
 
 # Each Calendar is a list of Events
 class Calendar:
