@@ -3,40 +3,24 @@ from googleapiclient.discovery import build
 from apiclient import errors
 from httplib2 import Http
 from oauth2client import file, client, tools
-import base64
-import email
 import datetime
-import mail_interface
+
+# text to speech
+from gtts import gTTS
+import os
+
+def speak(string, slow=False):
+    tts = gTTS(text=string, lang='en', slow=slow)
+    tts.save("daily_briefing_out.mp3")
+    os.system("mpg321 daily_briefing_out.mp3 -q")
+
+# import base64
+# import email
 
 # TODO get full body of email (parse mimetype)
 # TODO get endpoints from calendar to try to put together with email querying
 # TODO Extract information from certain emails
 # TODO Handle email threads
-
-def main():
-
-    '''Authorize Gmail API for account'''
-    mail = Mail()
-
-
-    print("\n\nListing all labels for this gmail account...\n\n")
-    mail.get_labels()
-
-
-    '''Query by term'''
-    query_terms = ['hike', 'meet', 'see you']
-    for query in query_terms:
-        print("\n\n Querying messages for \""+ query +"\" ...\n\n")
-        mail.ListMessagesMatchingQuery(query)
-
-
-    '''Get messages with Label'''
-    label_terms = [u'UNREAD', u'IMPORTANT', u'CATEGORY_PERSONAL', u'STARRED']
-
-    for label in label_terms:
-        print("\n\nGetting all "+ label+" messages \n\n")
-        mail.ListMessagesWithLabels([label])
-
 
 ''' Convert gmail's internalDate long to a datetime str '''
 def internalDate_to_timestamp(internalDate):
@@ -67,9 +51,9 @@ class Message:
         subject: {}
         snippet: {}
         '''.format(self.id, self.timestamp, self.labels, self.sender,
-        self.recipients, self.subject, self.snippet)
+        self.recipients, self.subject, self.snippet).decode('utf-8').encode('ascii')
 
-        return 72*"*"+"\n"+out_str+"\n"+72*"*"
+        return out_str
 
     ''' Parse gmail api's returned message into object we an easily work with '''
     def __init__(self, message):
@@ -105,30 +89,25 @@ class Message:
         # TODO Depending on mimetype, we will parse the body differently
 
         print(self)
-
+        speak(repr(self))
+        print(72*"*"+"\n")
 
 
 class Mail:
 
-    ''' If modifying these scopes, delete the file token.json. '''
-    SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 
-    ''' The user's email address. The special value 'me' used to indicate the authenticated user. '''
-    user_id = 'me'
-
-    ''' Initiate authorized service for gmail API with specified account '''
-    def __init__(self):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', self.SCOPES)
-            creds = tools.run_flow(flow, store)
-        self.service = build('gmail', 'v1', http=creds.authorize(Http()))
-
+    ''' Get authorized service for gmail API with specified account from DailyBriefing.py'''
+    def __init__(self, service, user_id, maxResults):
+        self.service = service
+        self.user_id = user_id
+        self.maxResults = maxResults
     ''' Get message matching id '''
     def get_message_by_id(self, msg_id):
 
-        message = self.service.users().messages().get(userId=self.user_id, id=msg_id['id']).execute()
+        message = self.service.users().messages().get(
+            userId=self.user_id,
+            id=msg_id['id']
+        ).execute()
 
         ''' Parse message and return a new message object '''
         return Message(message)
@@ -150,8 +129,12 @@ class Mail:
     ''' List all Messages of the user's mailbox matching the query. '''
     def ListMessagesMatchingQuery(self, query=''):
         try:
-            response = self.service.users().messages().list(userId=self.user_id,
-            q=query).execute()
+            response = self.service.users().messages().list(
+                userId=self.user_id,
+                maxResults=self.maxResults,
+                q=query
+            ).execute()
+
             messages = []
             if 'messages' in response:
                 messages.extend(response['messages'])
@@ -161,8 +144,13 @@ class Mail:
 
             while 'nextPageToken' in response:
                 page_token = response['nextPageToken']
-                response = self.service.users().messages().list(userId=self.user_id, q=query,
-                pageToken=page_token).execute()
+                response = self.service.users().messages().list(
+                    userId=self.user_id,
+                    q=query,
+                    maxResults=self.maxResults,
+                    pageToken=page_token
+                ).execute()
+
                 messages.extend(response['messages'])
 
                 for x in messages:
@@ -175,8 +163,12 @@ class Mail:
     ''' List all Messages of the user's mailbox with label_ids applied '''
     def ListMessagesWithLabels(self, label_ids=[]):
         try:
-            response = self.service.users().messages().list(userId=self.user_id,
-            labelIds=label_ids).execute()
+            response = self.service.users().messages().list(
+                userId=self.user_id,
+                maxResults=self.maxResults,
+                labelIds=label_ids
+            ).execute()
+
             messages = []
             if 'messages' in response:
                 messages.extend(response['messages'])
@@ -186,9 +178,12 @@ class Mail:
 
             while 'nextPageToken' in response:
                 page_token = response['nextPageToken']
-                response = self.service.users().messages().list(userId=self.user_id,
-                labelIds=label_ids,
-                pageToken=page_token).execute()
+                response = self.service.users().messages().list(
+                    userId=self.user_id,
+                    maxResults=self.maxResults,
+                    labelIds=label_ids,
+                    pageToken=page_token
+                ).execute()
                 messages.extend(response['messages'])
 
                 for x in messages:
@@ -197,7 +192,3 @@ class Mail:
                 return messages
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
-
-
-if __name__ == '__main__':
-    main()

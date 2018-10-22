@@ -1,7 +1,20 @@
 # daily-briefing
 A system that tells you and answers questions about your day.
 
-## Instructions
+## Google API Credentials
+You need to authorize the google api to have access to your calendar and mail account.
+Click the big blue button that says "ENABLE THE GMAIL API" here https://developers.google.com/gmail/api/quickstart/python.
+And, click the big blue button that says "ENABLE THE GOOGLE CALENDAR API" here https://developers.google.com/calendar/quickstart/python
+For both of these, use the same project to authenticate so that our daily_briefing app can use both apis.
+
+You'll have to download a file called 'credentials.json' that you will put in the root directory of this project.
+
+Then run `$python daily_briefing.py` to see a test example
+
+## Text-To-Speech
+Need mpg321 installed on your computer. for mac `$brew install mpg321`
+
+## Virtual Environment Set Up
 To isolate the dependencies we use in our project (so they aren't installed in your whole system and isolated to your project), we will use virtualenv, which is a popular package used to do this.
 
 1. Check if you have `pip` which is the most commonly used python package manager. If you don't, install it by following the instructions here: https://pip.pypa.io/en/stable/installing/
@@ -47,7 +60,7 @@ pip freeze > requirements.txt
 *What this does*: `pip freeze` outputs a list of the current project dependencies and redirects them into a file named `requirements.txt`.
 *Why we do this*: So that when someone pulls from the repo and the project has new dependencies, they can simply install the newly listed dependencies by running:
 ```python
-pip install -r requirements.txt 
+pip install -r requirements.txt
 ```
 
 #### When you're done working...
