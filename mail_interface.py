@@ -8,6 +8,7 @@
 
 # Modules
 import datetime
+from apiclient import errors
 
 
 '''
@@ -18,7 +19,6 @@ def internalDate_to_timestamp(internalDate):
     s = long(internalDate) / 1000.0
     # return datetime.datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S')
     return datetime.datetime.fromtimestamp(s).strftime('%A %B %d, %Y %H:%M')
-
 
 
 '''
@@ -35,7 +35,7 @@ class Mail:
         self.maxResults = maxResults
 
 
-    ''' Get message matching id '''
+    ''' API call GET message matching id, then parse it into string represenation '''
     def get_message_by_id(self, msg_id):
 
         message = self.service.users().messages().get(
@@ -43,7 +43,7 @@ class Mail:
             id=msg_id['id']
         ).execute()
 
-        ''' Parse message and return a new message object '''
+        ''' Parse message into object, return as string represenation of the object '''
         return repr(Message(message))
 
 
@@ -52,14 +52,15 @@ class Mail:
         results = self.service.users().labels().list(userId=self.user_id).execute()
         labels = results.get('labels', [])
 
+        labels_processed = []
         if not labels:
             print('No labels found.')
         else:
             print('Labels:')
             for label in labels:
-                print(label['name'])
+                labels_processed.append(label['name'])
 
-        return labels
+        return labels_processed
 
 
     ''' List all Messages of the user's mailbox matching the query. '''
@@ -89,10 +90,12 @@ class Mail:
 
                 messages.extend(response['messages'])
 
-                for x in messages:
-                    self.get_message_by_id(x)
-
+                ''' Get the actual message content,
+                convert it to simple Message object
+                '''
+                messages = map(self.get_message_by_id, messages)
                 return messages
+
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
 
@@ -123,8 +126,10 @@ class Mail:
                 ).execute()
                 messages.extend(response['messages'])
 
-                for x in messages:
-                    self.get_message_by_id(x)
+                ''' Get the actual message content,
+                convert it to simple Message object
+                '''
+                messages = map(self.get_message_by_id, messages)
 
                 return messages
         except errors.HttpError, error:

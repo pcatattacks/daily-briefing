@@ -47,7 +47,7 @@ def conversation():
 
     # Main event loop
     for count, event in enumerate(list_of_events):
-        speak(''' Your {} event is {} at {}. '''.format(str(count), event.title, event.start_time)
+        speak(''' Your {} event is {} at {}. '''.format(str(count), event.title, event.start_time))
 
         pause_for_response()
 
@@ -61,28 +61,26 @@ def conversation():
 
 def parse_user_commands(input_string):
     flag = True
-    if "what" is in input_string:
-        if "time" is in input_string:
+    if "what" in input_string:
+        if "time" in input_string:
             speak(event.time)
-        if "day" is in input_string:
+        if "day" in input_string:
             speak(day(event.time))
-        # if "meetings" is in input_string:
+        # if "meetings" in input_string:
 
-    elif "who" is in input_string:
+    elif "who" in input_string:
         # TODO get names from event and search email
         names = db.parse_names(event)
         for name in names:
             db.mail.ListMessagesMatchingQuery(name)
-        pass
-    elif "where" is in input_string:
+    elif "where" in input_string:
         speak(event.location)
-    elif "more" is in input_string:
+    elif "more" in input_string:
         db.get_information_from_email_related_to_event(event)
-    elif "wait" is in input_string:
+    elif "wait" in input_string:
         pause_for_response()
+        pass
     else:
     # elif "continue" or "go on" or "next" in input_string:
         flag = False
     return flag
-
-}

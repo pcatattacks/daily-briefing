@@ -1,3 +1,6 @@
+# Sound outputs
+*.mp3
+
 # google api authorization credentials
 token.json
 credentials.json

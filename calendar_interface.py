@@ -2,10 +2,27 @@
 # TODO Proper api calls for events of the day
 # TODO Api calls for events matching a query (like meetings, tests, trips, etc...)
 # TODO Parse calendar obj returned from google into a simpler custom 'Event'
-# object for easier use by our DailyBriefing class. 
+# object for easier use by our DailyBriefing class.
 
 # Modules
 import datetime
+from apiclient import errors
+
+
+''' Helper Functions '''
+''' Convert timestamps into human readable format
+
+    e.g.    Start time: 2014-06-03 09:00 AM
+            End time: 2014-06-03 10:00 AM
+
+'''
+def cal_datetime_to_readable(datetime_in):
+    s = datetime.datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-07:00")
+
+    ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
+
+    return ss
+
 
 '''
     The Calendar Class
@@ -44,14 +61,13 @@ class Calendar:
         ).execute()
 
         events = events_result.get('items', [])
-
+        events_processed = []
         if not events:
             print('No upcoming events found.')
         for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            # print(start + ": " +event['summary'])
-            # print(start, "|", event['status'].upper(),"|", event['location'], "|", event['summary'])
-            return start + ": " + event['summary']
+
+            events_processed.append(Event(event))
+        return events_processed
 
     ''' Reads out events of the Day '''
     def get_todays_events(self):
@@ -77,24 +93,48 @@ class Calendar:
 
 class Event:
 
-    time = "" # what format is time? UTC
-    title = ""
+    summary = ''
+    start = "" # what format is time? UTC
+    end = ""
     location = "" # (address)
     description = ""
+    creator = ""
+    organizer = ""
+    attendees = []
     link = ""
-    participants = []
-    emails = []
+    source = ""
+    attachments = []
 
-    def __init__(self, time, title, location, description, link, participants):
-        if time:
-            self.time = time
-        if title:
-            self.title = title
-        if location:
-            self.location = location
-        if description:
-            self.description = description
-        if link:
-            self.link = link
-        if participants:
-            self.participants = participants
+    # relevant_emails = []
+
+    def __init__(self, event):
+
+        self.start = cal_datetime_to_readable(event['start']['dateTime'])
+        self.end = cal_datetime_to_readable(event['start']['dateTime'])
+        self.id = event['id']
+
+        if 'summary' in event:
+            self.summary = event['summary']
+        if 'location' in event:
+            self.location = event['location']
+        if 'description' in event:
+            self.description = event['description']
+        if 'link' in event:
+            self.link = event['link']
+        if 'attendees' in event:
+            self.attendees = event['attendees']
+
+    def __repr__(self):
+        out_str = '''
+        EVENT
+        summary {}
+        start {}
+        end {}
+        location {}
+        description {}
+        creator {}
+        attendees {}
+        '''.format(self.id, self.summary, self.start, self.end,
+        self.location, self.description, self.creator, self.attendees)
+
+        return out_str
