@@ -18,10 +18,6 @@ import datetime
 from gmail_api import *
 from calendar_interface import *
 
-def speak(string, slow=False):
-    tts = gTTS(text=string, lang='en', slow=slow)
-    tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3 -q")
 
 
 class DailyBriefing:
@@ -57,30 +53,40 @@ class DailyBriefing:
 
 
         # speak(''' Next 10 events on the Calendar ''')
-        # self.cal.get_next_ten_events()
+        # print(''' Next 10 events on the Calendar ''')
+        self.cal.get_next_ten_events()
+        print('\n\n')
         #
-        # print('\n\n')
-
         # speak("Listing all labels for this gmail account...\n\n")
+        # print("Listing all labels for this gmail account...\n\n")
         # self.mail.get_labels()
-
         # print('\n\n')
 
         # speak(''' Query messages by term ''')
-        # query_terms = ['hike', 'meet', 'see you']
-        # for query in query_terms:
-        #     speak("\n\n Querying messages for \""+ query +"\" ...\n\n", slow=True )
-        #     self.mail.ListMessagesMatchingQuery(query)
+        # print(''' Query messages by term ''')
+        query_terms = ['hike', 'meet', 'see you']
+        for query in query_terms:
+            # speak("\n\n Querying messages for \""+ query +"\" ...\n\n", slow=True )
+            self.mail.ListMessagesMatchingQuery(query)
 
         # speak(''' Get messages by Label ''')
         label_terms = ['IMPORTANT', 'CATEGORY_PERSONAL', 'STARRED', 'UNREAD']
 
         for label in label_terms:
-            speak("Getting all "+ label+" messages \n\n")
+            # speak("Getting all "+ label+" messages \n\n")
             self.mail.ListMessagesWithLabels([label])
 
+    '''
+        Get information from email to bolster a calendar event
+        Employ semantic 'cheap' tricks!
+    '''
+    def get_information_from_email_related_to_event(self, cal_event):
+        # TODO This is the crux of the project
+        pass
 
-
+    def create_calendar_event_from_email(self, email_id):
+        # TODO This is bonus points
+        pass
 
 def main():
 

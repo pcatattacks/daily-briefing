@@ -9,10 +9,10 @@ import datetime
 from gtts import gTTS
 import os
 
-def speak(string, slow=False):
-    tts = gTTS(text=string, lang='en', slow=slow)
-    tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3 -q")
+# def speak(string, slow=False):
+#     tts = gTTS(text=string, lang='en', slow=slow)
+#     tts.save("daily_briefing_out.mp3")
+#     os.system("mpg321 daily_briefing_out.mp3 -q")
 
 # import base64
 # import email
@@ -25,7 +25,8 @@ def speak(string, slow=False):
 ''' Convert gmail's internalDate long to a datetime str '''
 def internalDate_to_timestamp(internalDate):
     s = long(internalDate) / 1000.0
-    return datetime.datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S')
+    # return datetime.datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.datetime.fromtimestamp(s).strftime('%A %B %d, %Y')
 
 
 class Message:
@@ -40,6 +41,9 @@ class Message:
     thread = None
     labels = []
     important = False
+
+
+    # TODO How to represent information differently for text vs speech?
 
     def __repr__(self):
         out_str = '''
@@ -60,6 +64,7 @@ class Message:
 
         self.id = message['id'].encode('utf-8')
 
+        # TODO make timestamps human readable
         ''' Get labels such as 'CHAT', 'IMPORTANT', 'CATEGORY_PERSONAL', 'INBOX' '''
         if 'labelIds' in message:
             self.labels = message['labelIds']
@@ -88,9 +93,10 @@ class Message:
 
         # TODO Depending on mimetype, we will parse the body differently
 
-        print(self)
-        speak(repr(self))
-        print(72*"*"+"\n")
+        # print(self)
+        # speak(repr(self))
+        # print(72*"*"+"\n")
+        return repr(self)
 
 
 class Mail:
@@ -101,6 +107,8 @@ class Mail:
         self.service = service
         self.user_id = user_id
         self.maxResults = maxResults
+
+
     ''' Get message matching id '''
     def get_message_by_id(self, msg_id):
 
@@ -111,6 +119,7 @@ class Mail:
 
         ''' Parse message and return a new message object '''
         return Message(message)
+
 
     '''Lists the user's Gmail labels'''
     def get_labels(self):
@@ -125,6 +134,7 @@ class Mail:
                 print(label['name'])
 
         return labels
+
 
     ''' List all Messages of the user's mailbox matching the query. '''
     def ListMessagesMatchingQuery(self, query=''):
@@ -159,6 +169,7 @@ class Mail:
                 return messages
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
+
 
     ''' List all Messages of the user's mailbox with label_ids applied '''
     def ListMessagesWithLabels(self, label_ids=[]):

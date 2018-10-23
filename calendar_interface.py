@@ -12,15 +12,14 @@ import datetime
 from gtts import gTTS
 import os
 
-def speak(string, slow=False):
-    tts = gTTS(text=string, lang='en', slow=slow)
-    tts.save("daily_briefing_out.mp3")
-    os.system("mpg321 daily_briefing_out.mp3 -q")
+# def speak(string, slow=False):
+#     tts = gTTS(text=string, lang='en', slow=slow)
+#     tts.save("daily_briefing_out.mp3")
+#     os.system("mpg321 daily_briefing_out.mp3 -q")
 
 # Each Calendar is a list of Events
 class Calendar:
 
-    # events is a dictionary, of arrays
     events = {
         "daily": [], # List of events
         # "weekly": [], # list of days
@@ -33,12 +32,13 @@ class Calendar:
         self.user_id = user_id
         self.maxResults = maxResults
 
+    ''' Get the next ten upcoming events'''
     def get_next_ten_events(self):
 
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
 
-        print('Getting the upcoming 10 events')
+        # print('Getting the upcoming 10 events')
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -54,24 +54,22 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            speak(start + event['summary'])
+            # print(start + ": " +event['summary'])
             # print(start, "|", event['status'].upper(),"|", event['location'], "|", event['summary'])
-        #     print('----------------------------------------------------------------------')
+            return start + ": " + event['summary']
 
-
-    # Reads out events of the Day
-    # Time, Title, (maybe, Description and participants, or leave out til they ask)
-    def get_daily_briefing(self):
+    ''' Reads out events of the Day '''
+    def get_todays_events(self):
+        # TODO THIS IS THE MAIN POINT
         return 0
 
-    # Keyword match to events in daily calendar.
+    ''' Keyword match to events in daily calendar. '''
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
         return 0
 
 
 
 
-# Event is an object
 class Event:
 
     time = "" # what format is time? UTC
@@ -80,6 +78,7 @@ class Event:
     description = ""
     link = ""
     participants = []
+    emails = []
 
     def __init__(self, time, title, location, description, link, participants):
         if time:
