@@ -1,23 +1,18 @@
 # Daily Breifing: Functional Architecture for Google Calendar
+# TODO Proper api calls for events of the day
+# TODO Api calls for events matching a query (like meetings, tests, trips, etc...)
+# TODO Parse calendar obj returned from google into a simpler custom 'Event'
+# object for easier use by our DailyBriefing class. 
 
-from __future__ import print_function
-from googleapiclient.discovery import build
-from apiclient import errors
-from httplib2 import Http
-from oauth2client import file, client, tools
+# Modules
 import datetime
 
-# text to speech
-# Text to Speech Modules
-from gtts import gTTS
-import os
+'''
+    The Calendar Class
+    # TODO Proper api calls for events of the day
+    # TODO Api calls for events matching a query (like meetings, tests, trips, etc...)
 
-# def speak(string, slow=False):
-#     tts = gTTS(text=string, lang='en', slow=slow)
-#     tts.save("daily_briefing_out.mp3")
-#     os.system("mpg321 daily_briefing_out.mp3 -q")
-
-# Each Calendar is a list of Events
+'''
 class Calendar:
 
     events = {
@@ -69,6 +64,16 @@ class Calendar:
 
 
 
+# TODO Parse calendar obj returned from google into a simpler custom 'Event'
+# object for easier use by our DailyBriefing class.
+
+
+'''
+    The Calendar Class
+    # TODO Parse calendar obj returned from google into a simpler custom 'Event'
+        object for easier use by our DailyBriefing class.
+
+'''
 
 class Event:
 

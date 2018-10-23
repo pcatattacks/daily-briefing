@@ -1,13 +1,19 @@
 # the Daily Breifing interface
+# TODO Datetime formatting for timestamps
+# TODO Interaction between calendar and mail information!! IMPORTANT
+# TODO Handle encoding/decoding to avoid errors like the following ...
+#  `UnicodeEncodeError: 'ascii' codec can't encode character u'\xe9' in position 46: ordinal not in range(128)`
+#TODO Find good examples of emails that bolster calendar events in your personal email
+# and write functions to create a good demo of our Daily Briefing app.
 
-# Google API Modules
+''' Google API Modules '''
 from __future__ import print_function
 from googleapiclient.discovery import build
 from apiclient import errors
 from httplib2 import Http
 from oauth2client import file, client, tools
 
-# Text to Speech Modules
+''' Text to Speech Modules '''
 from gtts import gTTS
 import os
 
@@ -15,10 +21,19 @@ import os
 import datetime
 
 ''' Daily Briefing Modules '''
-from gmail_api import *
+from mail_interface import *
 from calendar_interface import *
+from conversation_interface import *
 
 
+'''
+    The DailyBriefing class
+    * This is the center of our 'intelligent information system'.
+    * It authorizes our use of google's calendar and mail apis.
+    * Makes calls to our calendar interface to get information on upcoming events.
+    * Makes calls to our mail interface (and # TODO LinkedIn) to get information
+        relevant to calendar events.
+'''
 
 class DailyBriefing:
     ''' If modifying these scopes, delete the file token.json. '''
@@ -57,10 +72,10 @@ class DailyBriefing:
         self.cal.get_next_ten_events()
         print('\n\n')
         #
-        # speak("Listing all labels for this gmail account...\n\n")
-        # print("Listing all labels for this gmail account...\n\n")
-        # self.mail.get_labels()
-        # print('\n\n')
+        speak("Listing all labels for this gmail account...\n\n")
+        print("Listing all labels for this gmail account...\n\n")
+        self.mail.get_labels()
+        print('\n\n')
 
         # speak(''' Query messages by term ''')
         # print(''' Query messages by term ''')
