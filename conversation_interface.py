@@ -79,7 +79,9 @@ import os
 
 def create_file_to_speak(string, slow=False):
     ''' Google Text-To-Speech'''
-    mp3_file_name = string.split("\n")[0] + '.mp3'
+    # mp3_file_name = string.split("\n")[0].split()
+    # "_".join(mp3_file_name)+ ".mp3"
+    mp3_file_name = "db_out.mp3"
     tts = gTTS(text=string, lang='en', slow=slow)
     tts.save(mp3_file_name)
     return mp3_file_name

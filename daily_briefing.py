@@ -131,17 +131,10 @@ class DailyBriefing:
 
         timeout = 3 # seconds
 
-        while events_to_brief:
-
-            # Read out next event
-            if events_to_brief:
-                if event_counter == 0:
-                    speak(briefing_subject)
-                speak(events_to_brief[event_counter])
-                event_counter += 1
+        while True:
 
             # Select what's ready to read/write/exceptions
-            r, w, e = select([sys.stdin], [], [], timeout)
+            r, w, e = select([sys.stdin], [], [], 3)
 
             if sys.stdin in r:
                 # Read user input and follow commands
@@ -159,13 +152,23 @@ class DailyBriefing:
                 events_to_brief = map(repr, events_to_brief)
                 # files_to_read = map(create_file_to_speak, events_to_brief)
 
+            # Read out next event
+            if events_to_brief:
+                # Introduce list of events (e.g. events for today/)
+                if event_counter == 0:
+                    speak(briefing_subject)
+
+                # Read the next event in list
+                speak(events_to_brief[event_counter])
+                event_counter += 1
+
 
 
 def main():
 
     daily_briefing = DailyBriefing()
 
-    daily_briefing.converse()
+    # daily_briefing.converse()
 
     # speak('''Good morning. Would you like to go over your agenda for
     # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
@@ -173,8 +176,13 @@ def main():
     # the possibility of a godless universe. At noon you have lunch with the General Secretary of the
     # United Nations. That is all of you scheduled events for the day.''', duration=10)
 
-    events = daily_briefing.cal.get_next_ten_events()
-    for event in events: speak(repr(event))
+    # events = daily_briefing.cal.get_next_ten_events()
+    # for event in events: speak(repr(event))
+
+    messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
+    for m in messages:
+        print(m)
+
 
 
 if __name__ == '__main__':
