@@ -1,15 +1,16 @@
 # daily-briefing
 A system that tells you and answers questions about your day.
 
+`$python daily_briefing.py` to see a test example
+
 ## Google API Credentials
 You need to authorize the google api to have access to your calendar and mail account.
-Click the big blue button that says "ENABLE THE GMAIL API" here https://developers.google.com/gmail/api/quickstart/python.
-And, click the big blue button that says "ENABLE THE GOOGLE CALENDAR API" here https://developers.google.com/calendar/quickstart/python
-For both of these, use the same project to authenticate so that our daily_briefing app can use both apis.
 
-You'll have to download a file called 'credentials.json' that you will put in the root directory of this project.
+1. NOTE: For the following steps, make sure to use the same project to authenticate, so that our single daily_briefing app can have access both your calendar and mail.
+2. Go https://developers.google.com/gmail/api/quickstart/python. Click the big blue button that says "ENABLE THE GMAIL API", follow the instructions...
+3. Go to https://developers.google.com/calendar/quickstart/python. Click the big blue button that says "ENABLE THE GOOGLE CALENDAR API".
 
-Then run `$python daily_briefing.py` to see a test example
+You'll have to download a file called `credentials.json`. Put it in the `./config` directory of this project (just to keep things tidy). And put the `token.json` in the that `/.config` folder.
 
 ## Text-To-Speech
 Need mpg321 installed on your computer. for mac `$brew install mpg321`
