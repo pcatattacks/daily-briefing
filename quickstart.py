@@ -20,9 +20,11 @@ def main():
 
     # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
-    events_result = service.events().list(calendarId='primary', timeMin=now,
-                                        maxResults=10, singleEvents=True,
+    endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+    print('Getting today\'s events')
+    events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                         singleEvents=True,
                                         orderBy='startTime').execute()
     events = events_result.get('items', [])
 
