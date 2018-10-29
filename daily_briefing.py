@@ -17,6 +17,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
+from select import select
+
 ''' Text to Speech Modules '''
 from gtts import gTTS
 import os
@@ -46,6 +48,9 @@ from conversation_interface import *
     * Makes calls to our mail interface (and # TODO LinkedIn) to get information
         relevant to calendar events.
 '''
+
+def dummy_func():
+    return 0
 
 class DailyBriefing:
     ''' If modifying these scopes, delete the file token.json. '''
@@ -116,11 +121,61 @@ class DailyBriefing:
         # TODO This is bonus points
         pass
 
+    def converse(self):
+        speak("Hello!")
+
+        briefing_subject = ""
+        events_to_brief = []
+        # files_to_read = []
+        event_counter = 0
+
+        timeout = 3 # seconds
+
+        while events_to_brief:
+
+            # Read out next event
+            if events_to_brief:
+                if event_counter == 0:
+                    speak(briefing_subject)
+                speak(events_to_brief[event_counter])
+                event_counter += 1
+
+            # Select what's ready to read/write/exceptions
+            r, w, e = select([sys.stdin], [], [], timeout)
+
+            if sys.stdin in r:
+                # Read user input and follow commands
+                user_in = sys.stdin.readline()
+                print("You printed ", user_in)
+
+                if "schedule" in user_in and "today" in user_in:
+                    briefing_subject = "Here are today's events...\n"
+                    events_to_brief = self.cal.get_next_ten_events()
+
+                # if "evening" in user_in and "week" in user_in:
+                #     briefing_subject = "Here are this week's events after 5pm...\n"
+                #     events_to_brief = self.cal.get_weeks_events_time_of_day("evening")
+
+                events_to_brief = map(repr, events_to_brief)
+                # files_to_read = map(create_file_to_speak, events_to_brief)
+
+
+
 def main():
 
     daily_briefing = DailyBriefing()
 
-    daily_briefing.test()
+    daily_briefing.converse()
+
+    # speak('''Good morning. Would you like to go over your agenda for
+    # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
+    # Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
+    # the possibility of a godless universe. At noon you have lunch with the General Secretary of the
+    # United Nations. That is all of you scheduled events for the day.''', duration=10)
+
+    events = daily_briefing.cal.get_next_ten_events()
+    for event in events: speak(repr(event))
+
 
 if __name__ == '__main__':
     main()

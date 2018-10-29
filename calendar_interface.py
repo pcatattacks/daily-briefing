@@ -5,7 +5,7 @@
 # object for easier use by our DailyBriefing class.
 
 # Modules
-import datetime
+from datetime import *
 from apiclient import errors
 
 
@@ -17,11 +17,11 @@ from apiclient import errors
 
 '''
 def cal_datetime_to_readable(datetime_in):
-    s = datetime.datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-07:00")
+    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-07:00")
 
     ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
 
-    return ss
+    return s
 
 
 '''
@@ -48,8 +48,8 @@ class Calendar:
     def get_next_ten_events(self):
 
         # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-
+        now = datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        # end_of_day = now + timedelta()
         # print('Getting the upcoming 10 events')
 
         events_result = self.service.events().list(
@@ -65,14 +65,37 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
-
             events_processed.append(Event(event))
+
         return events_processed
 
     ''' Reads out events of the Day '''
     def get_todays_events(self):
-        # TODO THIS IS THE MAIN POINT
-        return 0
+        # Call the Calendar API
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
+
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
+
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        events = events_result.get('items', [])
+        events_processed = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            events_processed.append(Event(event))
+
+        return events_processed
 
     ''' Keyword match to events in daily calendar. '''
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
@@ -99,11 +122,11 @@ class Event:
     location = "" # (address)
     description = ""
     creator = ""
-    organizer = ""
+    # organizer = ""
     attendees = []
-    link = ""
-    source = ""
-    attachments = []
+    # link = ""
+    # source = ""
+    # attachments = []
 
     # relevant_emails = []
 
@@ -124,17 +147,25 @@ class Event:
         if 'attendees' in event:
             self.attendees = event['attendees']
 
-    def __repr__(self):
-        out_str = '''
-        EVENT
-        summary {}
-        start {}
-        end {}
-        location {}
-        description {}
-        creator {}
-        attendees {}
-        '''.format(self.id, self.summary, self.start, self.end,
-        self.location, self.description, self.creator, self.attendees)
+    def __repr__(self, type='day'):
 
-        return out_str
+        out_str = '{} at {}\n' #'start: {}\nend: {}\n'
+        format_arg_list = [self.summary, self.start.time().strftime( "%I:%M %p" )] #, self.start, self.end]
+
+        if self.location:
+            out_str += 'Location: {}\n'
+            format_arg_list.append(self.location)
+
+        if self.description:
+            out_str += 'Description: {}\n'
+            format_arg_list.append(self.description)
+
+        if self.creator:
+            out_str += 'Creator: {}\n'
+            format_arg_list.append(self.creator)
+
+        if self.attendees:
+            out_str += 'Attendees: {}\n'
+            format_arg_list.append(self.attendees)
+
+        return out_str.format(*format_arg_list)
