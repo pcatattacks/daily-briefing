@@ -1,3 +1,6 @@
+.idea/
+credentials.py
+
 # google api authorization credentials
 token.json
 credentials.json
