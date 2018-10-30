@@ -44,7 +44,7 @@ class Mail:
         ).execute()
 
         ''' Parse message into object, return as string represenation of the object '''
-        return repr(Message(message))
+        return Message(message)
 
 
     '''Lists the user's Gmail labels'''

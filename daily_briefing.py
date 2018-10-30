@@ -122,12 +122,11 @@ class DailyBriefing:
         pass
 
     def converse(self):
-        speak("Hello!")
 
         briefing_subject = ""
         events_to_brief = []
         # files_to_read = []
-        event_counter = 0
+        event_counter = -1
 
         events_type = 'day'
 
@@ -136,8 +135,13 @@ class DailyBriefing:
         order_dict = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 7: "eighth", 8: "ninth", 9: "tenth"}
         while True:
 
-            # Select what's ready to read/write/exceptions
-            r, w, e = select([sys.stdin], [], [], 1)
+            if event_counter < 0:
+                speak("Hello! Would you like your daily briefing?")
+                r, w, e = select([sys.stdin], [], []) # wait indefinitely
+                event_counter += 1
+            else:
+                # Select what's ready to read/write/exceptions
+                r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
 
             # Read user input and follow commands
             if sys.stdin in r:
@@ -145,15 +149,19 @@ class DailyBriefing:
                 user_in = sys.stdin.readline()
                 # print("You entered ", user_in)
 
-                if "go" in user_in: # "schedule" in user_in and "today" in user_in:
+                if "go" in user_in or "yes" in user_in: # "schedule" in user_in and "today" in user_in:
                     briefing_subject = "Here are today's events...\n"
                     events_type = 'day'
-                    events_to_brief = map(repr, self.cal.get_next_ten_events())
+                    events_to_brief = self.cal.get_next_ten_events()
 
                 if "more info" in user_in:
                     speak("getting more info on this event")
                     # if events_to_brief:
                     #     speak(self.mail.get_information_from_email_related_to_event(events_to_brief[event_counter-1]))
+
+                if "stop" in user_in:
+                    speak("stopping...")
+                    break
 
                 # if "evening" in user_in and "week" in user_in:
                 #     briefing_subject = "Here are this week's events after 5pm...\n"
@@ -161,21 +169,37 @@ class DailyBriefing:
 
             # Read out next event
             if event_counter < len(events_to_brief):
+
                 if events_to_brief:
+
                     # Introduce list of events (e.g. events for today/)
                     if event_counter == 0:
                         speak(briefing_subject)
 
-
-                    speak("Your {} event is...".format(order_dict[event_counter]))
                     # Read the next event in list
-                    speak(events_to_brief[event_counter])
+
+                    this_event = events_to_brief[event_counter]
+
+                    msgs = self.mail.ListMessagesMatchingQuery(this_event.summary)
+
+                    speak("Your {} event is ".format(order_dict[event_counter]))
+
+                    speak(repr(this_event))
+
+                    speak("Related emails...")
+
+                    speak(repr(msgs[0]))
+
                     event_counter += 1
+
             else:
                 speak("That concludes your schedule for {}".format(events_type))
                 break
 
 def main():
+
+    user_voice_in = listen_to_user()
+    print(user_voice_in)
 
     daily_briefing = DailyBriefing()
 
@@ -190,9 +214,10 @@ def main():
     # events = daily_briefing.cal.get_next_ten_events()
     # for event in events: speak(repr(event))
 
-    messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
-    for m in messages:
-        print(m)
+    # messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
+    # for m in messages:
+    #     print(repr(m))
+
 
 
 

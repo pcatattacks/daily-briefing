@@ -14,6 +14,7 @@ You'll have to download a file called `credentials.json`. Put it in the `./confi
 
 ## Text-To-Speech
 Need mpg321 installed on your computer. for mac `$brew install mpg321`
+Also portaudio for pyaudio `$ brew install portaudio`
 
 ## Virtual Environment Set Up
 To isolate the dependencies we use in our project (so they aren't installed in your whole system and isolated to your project), we will use virtualenv, which is a popular package used to do this.

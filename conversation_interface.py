@@ -4,6 +4,52 @@
 from gtts import gTTS
 import os
 
+# Speech Recognition
+import speech_recognition as sr
+
+# Use computer microphone as input audio source
+mic = sr.Microphone()
+recognizer = sr.Recognizer()
+
+
+def listen_to_user():
+    print(sr.Microphone.list_microphone_names())
+    print("Foo")
+    with mic as source:
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+    print("bar")
+    return recognizer.recognize_google(audio)
+
+def create_file_to_speak(string, slow=False):
+    ''' Google Text-To-Speech'''
+    # mp3_file_name = string.split("\n")[0].split()
+    # "_".join(mp3_file_name)+ ".mp3"
+    mp3_file_name = "db_out.mp3"
+    tts = gTTS(text=string, lang='en', slow=slow)
+    tts.save(mp3_file_name)
+    return mp3_file_name
+
+
+def mpg321_mp3_call_quiet(filename):
+    mpg321_mp3_call_quiet1 = "mpg321 " + filename + " -q"
+    os.system(mpg321_mp3_call_quiet1)
+
+
+def speak(string="This is a test of the text-to-speach interface", slow=False, duration=False):
+
+    mp3_file_name = create_file_to_speak(string, slow)
+
+    # ''' Speak, print '''
+    # playAudioAndListenForUserInput(mp3_file_name, string)
+
+    ''' Print the text to accompany speech '''
+    print(string)
+
+    ''' Load and playlatest daily_briefing mp3 file'''
+    mpg321_mp3_call_quiet(mp3_file_name)
+
+
 # # Multiprocess/multithread Modules (to play audio and listen for user interruptions)
 # from subprocess import Popen, PIPE, STDOUT #
 # # from mutagen.mp3 import MP3
@@ -75,35 +121,6 @@ import os
 #             break
 #     if voice:
 #         voice.kill()
-
-
-def create_file_to_speak(string, slow=False):
-    ''' Google Text-To-Speech'''
-    # mp3_file_name = string.split("\n")[0].split()
-    # "_".join(mp3_file_name)+ ".mp3"
-    mp3_file_name = "db_out.mp3"
-    tts = gTTS(text=string, lang='en', slow=slow)
-    tts.save(mp3_file_name)
-    return mp3_file_name
-
-
-def mpg321_mp3_call_quiet(filename):
-    mpg321_mp3_call_quiet1 = "mpg321 " + filename + " -q"
-    os.system(mpg321_mp3_call_quiet1)
-
-
-def speak(string="This is a test of the text-to-speach interface", slow=False, duration=False):
-
-    mp3_file_name = create_file_to_speak(string, slow)
-
-    # ''' Speak, print '''
-    # playAudioAndListenForUserInput(mp3_file_name, string)
-
-    ''' Print the text to accompany speech '''
-    print(string)
-
-    ''' Load and playlatest daily_briefing mp3 file'''
-    mpg321_mp3_call_quiet(mp3_file_name)
 
 
 # def pause_for_response():
