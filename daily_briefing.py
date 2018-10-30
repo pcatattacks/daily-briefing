@@ -137,6 +137,7 @@ class DailyBriefing:
 
             if event_counter < 0:
                 speak("Hello! Would you like your daily briefing?")
+                print(">>> (yes/no)")
                 r, w, e = select([sys.stdin], [], []) # wait indefinitely
                 event_counter += 1
             else:
@@ -150,7 +151,7 @@ class DailyBriefing:
                 # print("You entered ", user_in)
 
                 if "go" in user_in or "yes" in user_in: # "schedule" in user_in and "today" in user_in:
-                    briefing_subject = "Here are today's events...\n"
+                    briefing_subject = "Ok, preparing today's events...\n"
                     events_type = 'day'
                     events_to_brief = self.cal.get_next_ten_events()
 
@@ -168,6 +169,7 @@ class DailyBriefing:
                 #     events_to_brief = map(repr, self.cal.get_weeks_events_time_of_day("evening"))
 
             # Read out next event
+            skip = False
             if event_counter < len(events_to_brief):
 
                 if events_to_brief:
@@ -182,13 +184,34 @@ class DailyBriefing:
 
                     msgs = self.mail.ListMessagesMatchingQuery(this_event.summary)
 
-                    speak("Your {} event is ".format(order_dict[event_counter]))
+                    event_str = "Your {} event is ".format(order_dict[event_counter]) + repr(this_event)
+                    event_list = event_str.split("\n")
+                    event_length = len(event_list)
 
-                    speak(repr(this_event))
+                    event_line_counter = 0
 
-                    speak("Related emails...")
+                    while event_line_counter < event_length:
 
-                    speak(repr(msgs[0]))
+                        speak(event_list[event_line_counter])
+
+                        # Select what's ready to read/write/exceptions
+                        r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
+
+                        # Read user input and follow commands
+                        if sys.stdin in r:
+
+                            user_in = sys.stdin.readline()
+                            # print("You entered ", user_in)
+
+                            if "next event" in user_in or "skip" in user_in:
+                                skip = True
+                                break
+                        event_line_counter += 1
+
+                    if not skip:
+                        speak("Pulling up the latest relevant email...")
+
+                        speak(repr(msgs[0]))
 
                     event_counter += 1
 
@@ -198,12 +221,16 @@ class DailyBriefing:
 
 def main():
 
-    user_voice_in = listen_to_user()
-    print(user_voice_in)
+    # user_voice_in = listen_to_user()
+    # print(user_voice_in)
 
     daily_briefing = DailyBriefing()
 
-    daily_briefing.converse()
+    msgs = daily_briefing.mail.ListMessagesMatchingQuery("photos")
+    for m in msgs:
+        print(m)
+
+    # daily_briefing.converse()
 
     # speak('''Good morning. Would you like to go over your agenda for
     # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock

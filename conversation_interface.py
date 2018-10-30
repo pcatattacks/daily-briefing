@@ -8,20 +8,23 @@ import os
 import speech_recognition as sr
 
 # Use computer microphone as input audio source
-mic = sr.Microphone()
-recognizer = sr.Recognizer()
+# mic = sr.Microphone()
+# recognizer = sr.Recognizer()
 
 
-def listen_to_user():
-    print(sr.Microphone.list_microphone_names())
-    print("Foo")
-    with mic as source:
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
-    print("bar")
-    return recognizer.recognize_google(audio)
+# def listen_to_user():
+#     print(sr.Microphone.list_microphone_names())
+#     print("Foo")
+#     with mic as source:
+#         recognizer.adjust_for_ambient_noise(source)
+#         audio = recognizer.listen(source)
+#     print("bar")
+#     return recognizer.recognize_google(audio)
 
 def create_file_to_speak(string, slow=False):
+
+    if not string:
+        return None
     ''' Google Text-To-Speech'''
     # mp3_file_name = string.split("\n")[0].split()
     # "_".join(mp3_file_name)+ ".mp3"
@@ -40,6 +43,8 @@ def speak(string="This is a test of the text-to-speach interface", slow=False, d
 
     mp3_file_name = create_file_to_speak(string, slow)
 
+    if not mp3_file_name:
+        return None
     # ''' Speak, print '''
     # playAudioAndListenForUserInput(mp3_file_name, string)
 

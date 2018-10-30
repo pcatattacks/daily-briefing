@@ -76,9 +76,6 @@ class Mail:
             if 'messages' in response:
                 messages.extend(response['messages'])
 
-                for x in messages:
-                    self.get_message_by_id(x)
-
             while 'nextPageToken' in response:
                 page_token = response['nextPageToken']
                 response = self.service.users().messages().list(
@@ -94,6 +91,9 @@ class Mail:
                 convert it to simple Message object
                 '''
                 messages = map(self.get_message_by_id, messages)
+                for m in messages:
+                    if not m.subject and not m.snippet:
+                        messages.remove(m)
                 return messages
 
         except errors.HttpError, error:
@@ -163,12 +163,20 @@ class Message:
 
         ''' Get labels, e.g. ['CHAT', 'IMPORTANT', 'CATEGORY_PERSONAL', 'INBOX'] '''
         if 'labelIds' in message:
-            self.labels = message['labelIds']
 
             ''' Skip spammy marketing emails '''
             if u'CATEGORY_UPDATES' in message['labelIds'] or \
             u'CATEGORY_PROMOTIONS' in message['labelIds']:
                 return None
+
+            self.labels = []
+            labels = message['labelIds']
+
+            for l in labels:
+                if "CATEGORY_" in l:
+                    self.labels.append(l[9:].capitalize())
+                else:
+                    self.labels.append(l.capitalize())
 
         self.timestamp = internalDate_to_timestamp(message['internalDate'])
 
@@ -181,25 +189,29 @@ class Message:
         ''' Get To, From, and Subject from Headers '''
         for pair in msg_payload['headers']:
             if pair['name'] == 'From':
-                self.sender = pair['value']
+                sender = pair['value'].split(",")
+                self.sender = ''
+                for x in sender:
+                    self.sender += " ".join(x.split()[:-1]) + ", "
+                self.sender = self.sender[:-2]
 
             if pair['name'] == 'To':
-                self.recipients = pair['value']
+                # self.recipients = pair['value'].split(",")
+                # for x in self.recipients:
+                #     x = x.split()[:-1]
+                recipients = pair['value'].split(",")
+                self.recipients = ''
+                for x in recipients:
+                    self.recipients += " ".join(x.split()[:-1]) + ", "
+                self.recipients = self.recipients[:-2]
 
             if pair['name'] ==  'Subject':
                 self.subject = pair['value']
 
-
     def __repr__(self):
-        out_str = '''
-        MESSAGE {}
-        timestamp: {}
-        labels: {}
-        sender: {}
-        recipients: {}
-        subject: {}
-        snippet: {}
-        '''.format(self.id, self.timestamp, self.labels, self.sender,
-        self.recipients, self.subject, self.snippet)
-
-        return out_str
+        format_args = self.labels + [self.timestamp, self.sender,
+        self.recipients, self.subject, self.snippet]
+        out_str = "\n\nMESSAGE ["+ len(self.labels) * "{}, "
+        out_str = out_str[:-2] + "]\n"
+        out_str += 'Date: {}\nSender: {}\nRecipients: {}\nSubject: {}\n\n{}\n\n'
+        return out_str.format(*format_args)
