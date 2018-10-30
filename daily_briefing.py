@@ -129,46 +129,57 @@ class DailyBriefing:
         # files_to_read = []
         event_counter = 0
 
+        events_type = 'day'
+
         timeout = 3 # seconds
 
+        order_dict = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 7: "eighth", 8: "ninth", 9: "tenth"}
         while True:
 
             # Select what's ready to read/write/exceptions
-            r, w, e = select([sys.stdin], [], [], 3)
+            r, w, e = select([sys.stdin], [], [], 1)
 
+            # Read user input and follow commands
             if sys.stdin in r:
-                # Read user input and follow commands
-                user_in = sys.stdin.readline()
-                print("You printed ", user_in)
 
-                if "schedule" in user_in and "today" in user_in:
+                user_in = sys.stdin.readline()
+                # print("You entered ", user_in)
+
+                if "go" in user_in: # "schedule" in user_in and "today" in user_in:
                     briefing_subject = "Here are today's events...\n"
-                    events_to_brief = self.cal.get_next_ten_events()
+                    events_type = 'day'
+                    events_to_brief = map(repr, self.cal.get_next_ten_events())
+
+                if "more info" in user_in:
+                    speak("getting more info on this event")
+                    # if events_to_brief:
+                    #     speak(self.mail.get_information_from_email_related_to_event(events_to_brief[event_counter-1]))
 
                 # if "evening" in user_in and "week" in user_in:
                 #     briefing_subject = "Here are this week's events after 5pm...\n"
-                #     events_to_brief = self.cal.get_weeks_events_time_of_day("evening")
-
-                events_to_brief = map(repr, events_to_brief)
-                # files_to_read = map(create_file_to_speak, events_to_brief)
+                #     events_to_brief = map(repr, self.cal.get_weeks_events_time_of_day("evening"))
 
             # Read out next event
-            if events_to_brief:
-                # Introduce list of events (e.g. events for today/)
-                if event_counter == 0:
-                    speak(briefing_subject)
-
-                # Read the next event in list
-                speak(events_to_brief[event_counter])
-                event_counter += 1
+            if event_counter < len(events_to_brief):
+                if events_to_brief:
+                    # Introduce list of events (e.g. events for today/)
+                    if event_counter == 0:
+                        speak(briefing_subject)
 
 
+                    speak("Your {} event is...".format(order_dict[event_counter]))
+                    # Read the next event in list
+                    speak(events_to_brief[event_counter])
+                    event_counter += 1
+            else:
+                speak("That concludes your schedule for {}".format(events_type))
+                break
 
 def main():
 
     daily_briefing = DailyBriefing()
 
-    # daily_briefing.converse()
+    daily_briefing.converse()
 
     # speak('''Good morning. Would you like to go over your agenda for
     # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
