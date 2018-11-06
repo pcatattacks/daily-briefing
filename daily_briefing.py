@@ -5,6 +5,10 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+# from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
+from LinkedInProfileUtil import get_linkedin_profiles_by_query
+# import json
+
 '''
     This seems to avoid encoding errors, but notice that there are
     ascii codes in emails that are still not being encoded
@@ -247,6 +251,6 @@ def main():
 
 
 
-
 if __name__ == '__main__':
     main()
+    # print (get_linkedin_profiles_by_query("Pranav Dhingra")) # example usage of linkedin feature.

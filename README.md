@@ -10,7 +10,15 @@ You need to authorize the google api to have access to your calendar and mail ac
 2. Go https://developers.google.com/gmail/api/quickstart/python. Click the big blue button that says "ENABLE THE GMAIL API", follow the instructions...
 3. Go to https://developers.google.com/calendar/quickstart/python. Click the big blue button that says "ENABLE THE GOOGLE CALENDAR API".
 
-You'll have to download a file called `credentials.json`. Put it in the `./config` directory of this project (just to keep things tidy). And put the `token.json` in the that `/.config` folder.
+You'll have to download a file called `credentials.json`. Put it in the `./config` directory of this project (just to keep things tidy). And put the `token.json` in the that `./config` folder.
+
+4. Create a file called `config/search_credentials.py`. Add to this file:
+```python
+GOOGLE_CUSTOM_SEARCH_API_KEY = api_key
+CUSTOM_SEARCH_ENGINE_ID =  engine_id
+```
+
+The `api_key` and `engine_id` are on Notion.
 
 ## Text-To-Speech
 Need mpg321 installed on your computer. for mac `$brew install mpg321`
