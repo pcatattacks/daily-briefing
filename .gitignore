@@ -1,7 +1,11 @@
 # Sound outputs
 *.mp3
 
+# intellij settings
+.idea/
+
 # google api authorization credentials
+config/
 token.json
 credentials.json
 
