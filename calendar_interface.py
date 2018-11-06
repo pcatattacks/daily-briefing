@@ -17,7 +17,7 @@ from apiclient import errors
 
 '''
 def cal_datetime_to_readable(datetime_in):
-    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-07:00")
+    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-08:00")
 
     ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
 
@@ -145,7 +145,10 @@ class Event:
         if 'link' in event:
             self.link = event['link']
         if 'attendees' in event:
-            self.attendees = event['attendees']
+            for x in event['attendees']:
+                self.attendees.append(x['displayName'].encode('utf-8'))
+
+        # self.speech =
 
     def __repr__(self, type='day'):
 

@@ -21,17 +21,44 @@ import speech_recognition as sr
 #     print("bar")
 #     return recognizer.recognize_google(audio)
 
-def create_file_to_speak(string, slow=False):
+order_dict = {
+                0: "first",     1: "second",    2: "third",
+                3: "fourth",    4: "fifth",     5: "sixth",
+                6: "seventh",   7: "eighth",    8: "ninth",
+                9: "tenth"
+            }
 
-    if not string:
-        return None
+def prepare_list_of_events_to_brief(events):
+
+    for x, event in enumerate(events):
+
+        print(event)
+
+        ''' Say which number event in the day this is '''
+        event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
+
+        event.filename = create_file_to_speak(event_str, title="event_"+str(x))
+        print(event.filename, event_str)
+
+    return events
+
+
+def speak(text, title):
+    mp3_filename = create_file_to_speak(text=text, title=title)
+    print_text_and_play_audio(text, mp3_filename)
+
+
+def create_file_to_speak(text, title, slow=False):
+
+    if not text or not title:
+        return "WHO YOU GONNA CALL? GHOSTBUSTERS"
+
+    mp3_filename = title + ".mp3"
+
     ''' Google Text-To-Speech'''
-    # mp3_file_name = string.split("\n")[0].split()
-    # "_".join(mp3_file_name)+ ".mp3"
-    mp3_file_name = "db_out.mp3"
-    tts = gTTS(text=string, lang='en', slow=slow)
-    tts.save(mp3_file_name)
-    return mp3_file_name
+    tts = gTTS(text=text, lang='en', slow=slow)
+    tts.save(mp3_filename)
+    return mp3_filename
 
 
 def mpg321_mp3_call_quiet(filename):
@@ -39,20 +66,13 @@ def mpg321_mp3_call_quiet(filename):
     os.system(mpg321_mp3_call_quiet1)
 
 
-def speak(string="This is a test of the text-to-speach interface", slow=False, duration=False):
-
-    mp3_file_name = create_file_to_speak(string, slow)
-
-    if not mp3_file_name:
-        return None
-    # ''' Speak, print '''
-    # playAudioAndListenForUserInput(mp3_file_name, string)
+def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
 
     ''' Print the text to accompany speech '''
-    print(string)
+    print(text)
 
     ''' Load and playlatest daily_briefing mp3 file'''
-    mpg321_mp3_call_quiet(mp3_file_name)
+    mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
 
 
 # # Multiprocess/multithread Modules (to play audio and listen for user interruptions)

@@ -85,25 +85,52 @@ class DailyBriefing:
 
         print(''' Next 10 events on the Calendar ''')
         events = self.cal.get_next_ten_events()
-        for event in events:
-            speak(repr(event))
-
-        # speak("Listing labels used by this gmail account!")
-        # for label in self.mail.get_labels(): speak(label)
+        for i, event in enumerate(events):
+            print(repr(event))
 
 
-        ''' List messages that match query '''
+        speak(text='''Good morning. Would you like to go over your agenda for
+        today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
+        Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
+        the possibility of a godless universe. At noon you have lunch with the General Secretary of the
+        United Nations. That is all of you scheduled events for the day.''', title="long_read")
+
+        events = daily_briefing.cal.get_next_ten_events()
+        for event in events: print(repr(event))
+
+        messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
+        for m in messages:
+            print(repr(m))
+
+
+        msgs = daily_briefing.mail.ListMessagesMatchingQuery("photos")
+        for m in msgs:
+            print(m)
+
+        print("Listing labels used by this gmail account!")
+        for label in self.mail.get_labels():
+            print(label)
+
+
+        '''
+        List messages that match query
+        '''
+
         query_terms = ['hike', 'meet', 'see you']
 
         for query in query_terms:
             print("\n\n Querying messages for \""+ query +"\" ...\n\n" )
-            for msg in self.mail.ListMessagesMatchingQuery(query): speak(msg)
+            for msg in self.mail.ListMessagesMatchingQuery(query):
+                print(msg)
 
 
-        ''' The following labels yield good results for calendar events '''
+        '''
+        The following labels yield good results for calendar events
+        '''
+
         label_terms = ['IMPORTANT', 'CATEGORY_PERSONAL', 'STARRED', 'UNREAD']
 
-        speak(''' Get messages that have a certain Label ''')
+        print(''' Get messages that have a certain Label ''')
         for label in label_terms:
             # speak("Getting all "+ label+" messages \n\n")
             self.mail.ListMessagesWithLabels([label])
@@ -117,135 +144,148 @@ class DailyBriefing:
         # TODO This is the crux of the project
         pass
 
-    def create_calendar_event_from_email(self, email_id):
-        # TODO This is bonus points
-        pass
+    # def create_calendar_event_from_email(self, email_id):
+    #     # TODO This is bonus points
+    #     pass
 
     def converse(self):
 
         briefing_subject = ""
-        events_to_brief = []
-        # files_to_read = []
+
+
+        '''
+        Initialize event_counter to -1 to start off with a prompt
+        before reading list of todays events
+        '''
         event_counter = -1
 
-        events_type = 'day'
+        # events_type = 'day'
 
-        timeout = 3 # seconds
+        timeout = 3 # seconds waiting for user input
 
-        order_dict = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 7: "eighth", 8: "ninth", 9: "tenth"}
+        ''' the big loop that runs the show '''
         while True:
 
-            if event_counter < 0:
-                speak("Hello! Would you like your daily briefing?")
-                print(">>> (yes/no)")
-                r, w, e = select([sys.stdin], [], []) # wait indefinitely
-                event_counter += 1
-            else:
-                # Select what's ready to read/write/exceptions
-                r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
+            ''' new_events_flag marks when user has made a request for a different set of events to be briefed on'''
+            new_events_flag = 0
 
-            # Read user input and follow commands
+            ''' At start-up, ask the user for a commmand '''
+            if event_counter < 0:
+                ''' the default command is to list the events for today '''
+                speak("Hello! Would you like your daily briefing?", "intro_0")
+                print(">>> (yes/no)")
+
+                ''' Wait indefinitely for user input '''
+                r, w, e = select([sys.stdin], [], [])
+                event_counter = 0
+            else:
+                ''' If we've passed the introduction
+                wait 1.5 seconds for user input
+                '''
+                r, w, e = select([sys.stdin], [], [], 1.5)
+
+            ''' If the user has said something, parse user input and follow their commands '''
             if sys.stdin in r:
 
                 user_in = sys.stdin.readline()
-                # print("You entered ", user_in)
 
+                ''' the default is get_next_ten_events '''
                 if "go" in user_in or "yes" in user_in: # "schedule" in user_in and "today" in user_in:
                     briefing_subject = "Ok, preparing today's events...\n"
-                    events_type = 'day'
-                    events_to_brief = self.cal.get_next_ten_events()
+                    # events_type = 'day'
+                    new_events = self.cal.get_next_ten_events()
+                    new_events_flag = 1
 
-                if "more info" in user_in:
-                    speak("getting more info on this event")
+                ''' user input e.g.:  what are my events at tech? '''
+                if "events at " in user_in:
+                    location = user_in.split("events at ")[1] # location = tech
+                    new_events = self.cal.getEventsAtLocation(location)
+                    new_events_flag = 1
+
+                ''' get more information about event from additional sources '''
+                if "more info on last event" in user_in:
+                    speak("getting more info on this event", "more_info_status")
                     # if events_to_brief:
                     #     speak(self.mail.get_information_from_email_related_to_event(events_to_brief[event_counter-1]))
 
-                if "stop" in user_in:
-                    speak("stopping...")
-                    break
-
+                #''' get all nightly events '''
                 # if "evening" in user_in and "week" in user_in:
                 #     briefing_subject = "Here are this week's events after 5pm...\n"
                 #     events_to_brief = map(repr, self.cal.get_weeks_events_time_of_day("evening"))
 
-            # Read out next event
-            skip = False
-            if event_counter < len(events_to_brief):
+                if "stop" in user_in:
+                    speak("stopping...", "stopping_status")
+                    break
 
-                if events_to_brief:
+                if new_events_flag:
+                    prepared_events = prepare_list_of_events_to_brief(new_events)
 
-                    # Introduce list of events (e.g. events for today/)
+            ''' If there are events loaded for briefing... '''
+            if prepared_events:
+
+                ''' Read out next event '''
+                skip = False
+                while event_counter < len(prepared_events):
+
+                    this_event = prepared_events[event_counter]
+
+                    ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
                     if event_counter == 0:
-                        speak(briefing_subject)
+                        speak(text=briefing_subject, title="briefing_subject")
 
-                    # Read the next event in list
+                    ''' Get sumplementary information from emails matching terms from summary '''
+                    longest_word_in_summary = max(this_event.summary.split(" "), key=len)
+                    msgs = self.mail.ListMessagesMatchingQuery(longest_word_in_summary)
 
-                    this_event = events_to_brief[event_counter]
-
-                    msgs = self.mail.ListMessagesMatchingQuery(this_event.summary)
-
-                    event_str = "Your {} event is ".format(order_dict[event_counter]) + repr(this_event)
-                    event_list = event_str.split("\n")
-                    event_length = len(event_list)
-
+                    ''' Read event line-by-line so we can interrupt them and ask for more info to skip to next event'''
                     event_line_counter = 0
+                    # while event_line_counter < len(this_event_text):
 
-                    while event_line_counter < event_length:
+                    ''' print and read the event out loud '''
+                    print_text_and_play_audio(repr(this_event), this_event.filename)
 
-                        speak(event_list[event_line_counter])
+                    ''' Handling interruptions...
+                    Listen for user input for 1.5 seconds '''
+                    r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
 
-                        # Select what's ready to read/write/exceptions
-                        r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
+                    '''
+                    If user said something, read user input and follow commands
+                    '''
+                    if sys.stdin in r:
+                        user_in = sys.stdin.readline()
+                        # print("You entered ", user_in)
 
-                        # Read user input and follow commands
-                        if sys.stdin in r:
+                        # TODO Sketch out what functionality for interrupting the event...
+                        #       like asking for more information on the location or time or subject.
 
-                            user_in = sys.stdin.readline()
-                            # print("You entered ", user_in)
+                        # if "next event" in user_in or "skip" in user_in:
+                        #     skip = True
+                        #     break
 
-                            if "next event" in user_in or "skip" in user_in:
-                                skip = True
-                                break
-                        event_line_counter += 1
+                    ''' For this event, pull up the latest email related to it '''
+                    # if not skip:
+                    speak("Pulling up the latest relevant email...", "relevant_email_status_0")
+                    speak("longest_word_in_summary: " + longest_word_in_summary, "relevant_email_status_1")
+                    speak(repr(msgs[0]), "relevant_email")
 
-                    if not skip:
-                        speak("Pulling up the latest relevant email...")
-
-                        speak(repr(msgs[0]))
-
+                    ''' increment counter to read next event '''
                     event_counter += 1
 
-            else:
-                speak("That concludes your schedule for {}".format(events_type))
+                ''' We have read all the events prepared for the briefing '''
+                speak(text="That concludes your briefing", title="conclusion")
                 break
 
+
+''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
 def main():
 
-    # user_voice_in = listen_to_user()
-    # print(user_voice_in)
-
+    ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing()
 
-    msgs = daily_briefing.mail.ListMessagesMatchingQuery("photos")
-    for m in msgs:
-        print(m)
+    ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
+    # daily_briefing.test()
 
-    # daily_briefing.converse()
-
-    # speak('''Good morning. Would you like to go over your agenda for
-    # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
-    # Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
-    # the possibility of a godless universe. At noon you have lunch with the General Secretary of the
-    # United Nations. That is all of you scheduled events for the day.''', duration=10)
-
-    # events = daily_briefing.cal.get_next_ten_events()
-    # for event in events: speak(repr(event))
-
-    # messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
-    # for m in messages:
-    #     print(repr(m))
-
-
+    daily_briefing.converse()
 
 
 if __name__ == '__main__':
