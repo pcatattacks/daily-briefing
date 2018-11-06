@@ -2,7 +2,9 @@
 *.mp3
 
 # google api authorization credentials
+config/token.json
 token.json
+config/credentials.json
 credentials.json
 
 # Byte-compiled / optimized / DLL files
