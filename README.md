@@ -12,7 +12,9 @@ You need to authorize the google api to have access to your calendar and mail ac
 
 You'll have to download a file called `credentials.json`. Put it in the `./config` directory of this project (just to keep things tidy). And put the `token.json` in the that `./config` folder.
 
-4. Create a file called `config/search_credentials.py`. Add to this file:
+4. Create a file `config/__init__.py`. Leave it empty.
+
+5. Create a file `config/search_credentials.py`. Add to this file:
 ```python
 GOOGLE_CUSTOM_SEARCH_API_KEY = api_key
 CUSTOM_SEARCH_ENGINE_ID =  engine_id
@@ -20,9 +22,33 @@ CUSTOM_SEARCH_ENGINE_ID =  engine_id
 
 The `api_key` and `engine_id` are on Notion.
 
+
 ## Text-To-Speech
 Need mpg321 installed on your computer. for mac `$brew install mpg321`
 Also portaudio for pyaudio `$ brew install portaudio`
+
+## Linked-In Profile Util
+
+Simply import the `get_linkedin_profiles_by_query(query)` function from `LinkedInProfileUtil.py`, like so:
+
+```python
+from LinkedInProfileUtil import get_linkedin_profiles_by_query
+```
+
+Pass in any string for the query param, and it'll return a `list` of `dict`. The `dict` will be of the format:
+```python
+{
+    "profile_url": linkedin_profile_url,
+    "hcard": {
+        "photo": profile_photo_url
+        "fn": full_name,
+        "title": headline_title
+    }
+}
+
+```
+
+The `"photo"` key of the `"hcard"` value dictionary may not always be present.
 
 ## Virtual Environment Set Up
 To isolate the dependencies we use in our project (so they aren't installed in your whole system and isolated to your project), we will use virtualenv, which is a popular package used to do this.
