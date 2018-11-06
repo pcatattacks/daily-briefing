@@ -262,9 +262,8 @@ class DailyBriefing:
 
                     ''' For this event, pull up the latest email related to it '''
                     # if not skip:
-                    speak("Pulling up the latest relevant email...", "relevant_email_status_0")
-                    speak("longest_word_in_summary: " + longest_word_in_summary, "relevant_email_status_1")
-                    speak(repr(msgs[0]), "relevant_email")
+                    speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n " + msgs[0].subject, "relevant_email_status_0")
+                    # speak(repr(msgs[0]), "relevant_email")
 
                     ''' increment counter to read next event '''
                     event_counter += 1
