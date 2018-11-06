@@ -150,8 +150,8 @@ class DailyBriefing:
 
     def converse(self):
 
+        ''' What is the user asking to be briefed on?'''
         briefing_subject = ""
-
 
         '''
         Initialize event_counter to -1 to start off with a prompt
@@ -159,9 +159,8 @@ class DailyBriefing:
         '''
         event_counter = -1
 
-        # events_type = 'day'
-
-        timeout = 3 # seconds waiting for user input
+        ''' Timeout in seconds to wait for user input '''
+        timeout = 3
 
         ''' the big loop that runs the show '''
         while True:
@@ -169,19 +168,18 @@ class DailyBriefing:
             ''' new_events_flag marks when user has made a request for a different set of events to be briefed on'''
             new_events_flag = 0
 
-            ''' At start-up, ask the user for a commmand '''
+            ''' At start-up, ask the user for a commmand
+            the default command is to list the events for today '''
             if event_counter < 0:
-                ''' the default command is to list the events for today '''
                 speak("Hello! Would you like your daily briefing?", "intro_0")
                 print(">>> (yes/no)")
 
                 ''' Wait indefinitely for user input '''
                 r, w, e = select([sys.stdin], [], [])
                 event_counter = 0
+
             else:
-                ''' If we've passed the introduction
-                wait 1.5 seconds for user input
-                '''
+                ''' If we've passed the introduction, wait 1.5 seconds for user input '''
                 r, w, e = select([sys.stdin], [], [], 1.5)
 
             ''' If the user has said something, parse user input and follow their commands '''
