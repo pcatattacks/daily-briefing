@@ -1,10 +1,12 @@
 # Sound outputs
 *.mp3
 
+# intellij settings
+.idea/
+
 # google api authorization credentials
-config/token.json
+config/
 token.json
-config/credentials.json
 credentials.json
 
 # Byte-compiled / optimized / DLL files
