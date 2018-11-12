@@ -279,8 +279,7 @@ class DailyBriefing:
                             break
 
                     ''' For this event, pull up the latest email related to it '''
-<<<<<<< HEAD
-                    # if not skip:
+
                     speak("Pulling up the latest relevant email for " + query + "\n " + msgs[0].subject, "relevant_email_status_0")
                     speak(repr(msgs[0]), "relevant_email")
 
@@ -288,11 +287,9 @@ class DailyBriefing:
                     if linkedin_profiles:
                         job_title = linkedin_profiles[0]['hcard']['title']
                     speak(job_title, 'job_title')
-=======
-                    if not skip:
-                        speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n ", "relevant_email_status_0")
+
+                    speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n ", "relevant_email_status_0")
                     # speak(repr(msgs[0]), "relevant_email")
->>>>>>> 3d454c93b9a5eaf3a9303c28b91856c68fdf718c
 
                     ''' increment counter to read next event '''
                     event_counter += 1
@@ -314,7 +311,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-<<<<<<< HEAD
-=======
-    # print (get_linkedin_profiles_by_query("Pranav Dhingra")) # example usage of linkedin feature.
->>>>>>> 3d454c93b9a5eaf3a9303c28b91856c68fdf718c
