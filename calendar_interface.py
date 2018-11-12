@@ -151,13 +151,12 @@ class Event:
         # self.speech =
 
     def __repr__(self, type='day'):
-
         out_str = '{} at {}\n' #'start: {}\nend: {}\n'
         format_arg_list = [self.summary, self.start.time().strftime( "%I:%M %p" )] #, self.start, self.end]
 
         if self.location:
             out_str += 'Location: {}\n'
-            format_arg_list.append(self.location)
+            format_arg_list.append(self.location.split(",")[0])
 
         if self.description:
             out_str += 'Description: {}\n'

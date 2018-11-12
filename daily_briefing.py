@@ -87,6 +87,9 @@ class DailyBriefing:
 
     def test(self):
 
+        ''' Example usage of linkedin feature. '''
+        print(get_linkedin_profiles_by_query("Pranav Dhingra"))
+
         print(''' Next 10 events on the Calendar ''')
         events = self.cal.get_next_ten_events()
         for i, event in enumerate(events):
@@ -237,7 +240,11 @@ class DailyBriefing:
 
                     ''' Get sumplementary information from emails matching terms from summary '''
                     longest_word_in_summary = max(this_event.summary.split(" "), key=len)
-                    msgs = self.mail.ListMessagesMatchingQuery(longest_word_in_summary)
+                    if len(this_event.summary.split(" ")) > 3:
+                        query = longest_word_in_summary
+                    else:
+                        query = this_event.summary
+                    msgs = self.mail.ListMessagesMatchingQuery(query)
 
                     ''' Read event line-by-line so we can interrupt them and ask for more info to skip to next event'''
                     event_line_counter = 0
@@ -266,8 +273,13 @@ class DailyBriefing:
 
                     ''' For this event, pull up the latest email related to it '''
                     # if not skip:
-                    speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n " + msgs[0].subject, "relevant_email_status_0")
-                    # speak(repr(msgs[0]), "relevant_email")
+                    speak("Pulling up the latest relevant email for " + query + "\n " + msgs[0].subject, "relevant_email_status_0")
+                    speak(repr(msgs[0]), "relevant_email")
+
+                    linkedin_profiles = get_linkedin_profiles_by_query(msgs[0].recipients[0])
+                    if linkedin_profiles:
+                        job_title = linkedin_profiles[0]['hcard']['title']
+                    speak(job_title, 'job_title')
 
                     ''' increment counter to read next event '''
                     event_counter += 1
@@ -279,7 +291,6 @@ class DailyBriefing:
 
 ''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
 def main():
-
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing()
 
@@ -290,4 +301,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # print (get_linkedin_profiles_by_query("Pranav Dhingra")) # example usage of linkedin feature.

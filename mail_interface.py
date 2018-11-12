@@ -213,5 +213,13 @@ class Message:
         self.recipients, self.subject, self.snippet]
         out_str = "\n\nMESSAGE ["+ len(self.labels) * "{}, "
         out_str = out_str[:-2] + "]\n"
-        out_str += 'Date: {}\nSender: {}\nRecipients: {}\nSubject: {}\n\n{}\n\n'
+        out_str += '''{}
+From: {}
+To: {}
+
+{}
+
+{}
+
+        '''
         return out_str.format(*format_args)
