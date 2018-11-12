@@ -179,7 +179,7 @@ class DailyBriefing:
             the default command is to list the events for today '''
             if event_counter < 0:
                 speak("Hello! Would you like your daily briefing?", "intro_0")
-                print(">>> (yes/no)")
+                print(">>> ")
 
                 ''' Wait indefinitely for user input '''
                 r, w, e = select([sys.stdin], [], [])
@@ -192,44 +192,46 @@ class DailyBriefing:
             ''' If the user has said something, parse user input and follow their commands '''
             if sys.stdin in r:
 
-                user_in = sys.stdin.readline()
+                # make userinput all lowercase
+                user_in = sys.stdin.readline().lower()
 
-                ''' the default is get_next_ten_events '''
                 if "go" in user_in or "yes" in user_in: # "schedule" in user_in and "today" in user_in:
+                    ''' the default is get_next_ten_events '''
                     briefing_subject = "Ok, preparing today's events...\n"
                     # events_type = 'day'
                     new_events = self.cal.get_next_ten_events()
                     new_events_flag = 1
 
-                ''' user input e.g.:  what are my events at tech? '''
-                if "events at " in user_in:
+                elif "events at " in user_in:
+                    ''' user input e.g.:  what are my events at tech? '''
                     location = user_in.split("events at ")[1] # location = tech
                     new_events = self.cal.getEventsAtLocation(location)
                     new_events_flag = 1
 
-                ''' user input e.g.: what is my 10AM? '''
-                if "AM" in user_in or "PM" in user_in:
-                    words = user_in.split(" ")
+                elif "am" in user_in or "pm" in user_in:
+                    ''' user input e.g.: what is my 10AM? '''
+                    words = user_in.split()
                     time = words[len(words)-1]
                     new_events = self.cal.getEventsAtTime(time)
                     new_events_flag = 1
 
-                ''' get more information about event from additional sources '''
-                if "more info on last event" in user_in:
+                elif "more info on last event" in user_in:
+                    ''' get more information about event from additional sources '''
                     speak("getting more info on this event", "more_info_status")
                     # if events_to_brief:
                     #     speak(self.mail.get_information_from_email_related_to_event(events_to_brief[event_counter-1]))
 
-                #''' get all nightly events '''
-                # if "evening" in user_in and "week" in user_in:
+                # elif "evening" in user_in and "week" in user_in:
+                #     ''' get all nightly events '''
                 #     briefing_subject = "Here are this week's events after 5pm...\n"
                 #     events_to_brief = map(repr, self.cal.get_weeks_events_time_of_day("evening"))
 
-                if "stop" in user_in:
-                    speak("stopping...", "stopping_status")
-                    break
+                # elif "stop" in user_in:
+                #     speak("stopping...", "stopping_status")
+                #     break
 
                 if new_events_flag:
+                    new_events_flag = 0
                     prepared_events = prepare_list_of_events_to_brief(new_events)
 
             ''' If there are events loaded for briefing... '''
@@ -253,10 +255,6 @@ class DailyBriefing:
                         query = this_event.summary
                     msgs = self.mail.ListMessagesMatchingQuery(query)
 
-                    ''' Read event line-by-line so we can interrupt them and ask for more info to skip to next event'''
-                    event_line_counter = 0
-                    # while event_line_counter < len(this_event_text):
-
                     ''' print and read the event out loud '''
                     print_text_and_play_audio(repr(this_event), this_event.filename)
 
@@ -269,14 +267,14 @@ class DailyBriefing:
                     '''
                     if sys.stdin in r:
                         user_in = sys.stdin.readline()
-                        # print("You entered ", user_in)
+                        print("You entered ", user_in)
 
                         # TODO Sketch out what functionality for interrupting the event...
                         #       like asking for more information on the location or time or subject.
 
-                        if "next event" in user_in or "skip" in user_in:
-                            skip = True
-                            break
+                        # if "next event" in user_in or "skip" in user_in:
+                        #     skip = True
+                        #     break
 
                     ''' For this event, pull up the latest email related to it '''
 

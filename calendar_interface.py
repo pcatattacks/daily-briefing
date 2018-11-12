@@ -32,6 +32,10 @@ def cal_datetime_to_readable(datetime_in):
 '''
 class Calendar:
 
+    now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+    end_of_day = now + timedelta(days=1)
+    end_of_day = (now + timedelta(hours=24)).isoformat() + 'Z'
+
     events = {
         "daily": [], # List of events
         # "weekly": [], # list of days
@@ -101,20 +105,11 @@ class Calendar:
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
         return 0
 
-    def getEventsWithAttendees(attendees):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsWithAttendees(self, attendees):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('getEventsWithAttendees ', attendees)
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -134,20 +129,10 @@ class Calendar:
         return events_processed
 
 
-    def getEventsAtTime(time):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsAtTime(self, time):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
-
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('getEventsAtTime', time)
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -164,20 +149,11 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
-    def getEventsAtLocation(location):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsAtLocation(self, location):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('getEventsAtLocation, ', location)
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -193,20 +169,11 @@ class Calendar:
         return events_processed
 
 
-    def getEventsWithKeywordsInTitle(keywords):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsWithKeywordsInTitle(self, keywords):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('getEventsWithKeywordsInTitle, ', keywords)
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -223,20 +190,11 @@ class Calendar:
         return events_processed
 
 
-    def getEventsWithKeywordsInDescription(keywords):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsWithKeywordsInDescription(self, keywords):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('getEventsWithKeywordsInDescription', keywords)
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -252,20 +210,11 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
-    def eventIsConfirmed(eventTitle):
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def eventIsConfirmed(self, eventTitle):
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+        print('eventIsConfirmed,' + eventTitle + "?")
+        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
                                              singleEvents=True,
                                             orderBy='startTime').execute()
         events = events_result.get('items', [])
