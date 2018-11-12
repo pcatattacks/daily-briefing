@@ -6,7 +6,7 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 
 # from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
-from LinkedInProfileUtil import get_linkedin_profiles_by_query
+#from LinkedInProfileUtil import get_linkedin_profiles_by_query
 # import json
 
 '''
@@ -204,6 +204,13 @@ class DailyBriefing:
                     new_events = self.cal.getEventsAtLocation(location)
                     new_events_flag = 1
 
+                ''' user input e.g.: what is my 10AM? '''
+                if "AM" in user_in or "PM" in user_in:
+                    words = user_in.split(" ")
+                    time = words[len(words)-1]
+                    new_events = self.cal.getEventsAtTime(time)
+                    new_events_flag = 1
+
                 ''' get more information about event from additional sources '''
                 if "more info on last event" in user_in:
                     speak("getting more info on this event", "more_info_status")
@@ -260,13 +267,13 @@ class DailyBriefing:
                         # TODO Sketch out what functionality for interrupting the event...
                         #       like asking for more information on the location or time or subject.
 
-                        # if "next event" in user_in or "skip" in user_in:
-                        #     skip = True
-                        #     break
+                        if "next event" in user_in or "skip" in user_in:
+                            skip = True
+                            break
 
                     ''' For this event, pull up the latest email related to it '''
-                    # if not skip:
-                    speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n " + msgs[0].subject, "relevant_email_status_0")
+                    if not skip:
+                        speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n ", "relevant_email_status_0")
                     # speak(repr(msgs[0]), "relevant_email")
 
                     ''' increment counter to read next event '''
