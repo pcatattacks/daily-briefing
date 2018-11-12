@@ -72,4 +72,4 @@ def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
     print(text)
 
     ''' Load and playlatest daily_briefing mp3 file'''
-    mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
+    # mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby

@@ -5,9 +5,9 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
-# from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
-#from LinkedInProfileUtil import get_linkedin_profiles_by_query
-# import json
+from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
+from LinkedInProfileUtil import get_linkedin_profiles_by_query
+import json
 
 '''
     This seems to avoid encoding errors, but notice that there are
@@ -286,7 +286,7 @@ class DailyBriefing:
                     linkedin_profiles = get_linkedin_profiles_by_query(msgs[0].recipients[0])
                     if linkedin_profiles:
                         job_title = linkedin_profiles[0]['hcard']['title']
-                    speak(job_title, 'job_title')
+                        speak(job_title, 'job_title')
 
                     speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n ", "relevant_email_status_0")
                     # speak(repr(msgs[0]), "relevant_email")
