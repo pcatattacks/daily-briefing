@@ -187,7 +187,7 @@ class DailyBriefing:
 
             else:
                 ''' If we've passed the introduction, wait 1.5 seconds for user input '''
-                r, w, e = select([sys.stdin], [], [], 1.5)
+                r, w, e = select([sys.stdin], [], [], 10.5)
 
             ''' If the user has said something, parse user input and follow their commands '''
             if sys.stdin in r:
@@ -281,11 +281,12 @@ class DailyBriefing:
                         #     break
 
                     ''' For this event, pull up the latest email related to it '''
+                    linkedin_profiles = None
+                    if msgs:
+                        speak("Pulling up the latest relevant email for " + query + "\n " + msgs[0].subject, "relevant_email_status_0")
+                        speak(repr(msgs[0]), "relevant_email")
+                        linkedin_profiles = get_linkedin_profiles_by_query(msgs[0].recipients[0])
 
-                    speak("Pulling up the latest relevant email for " + query + "\n " + msgs[0].subject, "relevant_email_status_0")
-                    speak(repr(msgs[0]), "relevant_email")
-
-                    linkedin_profiles = get_linkedin_profiles_by_query(msgs[0].recipients[0])
                     if linkedin_profiles:
                         job_title = linkedin_profiles[0]['hcard']['title']
                         speak(job_title, 'job_title')
@@ -295,10 +296,10 @@ class DailyBriefing:
 
                     ''' increment counter to read next event '''
                     event_counter += 1
-
+                event_counter = 0
                 ''' We have read all the events prepared for the briefing '''
-                speak(text="That concludes your briefing", title="conclusion")
-                break
+                #speak(text="That concludes your briefing", title="conclusion")
+
 
 
 ''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
