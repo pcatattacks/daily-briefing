@@ -212,6 +212,10 @@ class DailyBriefing:
                     ''' user input e.g.: what is my 10AM? '''
                     words = user_in.split()
                     time = words[len(words)-1]
+                    if "am" in time:
+                        time = time.split("am")[0]
+                    else:
+                        time = time.split("pm")[0]
                     new_events = self.cal.getEventsAtTime(time)
                     new_events_flag = 1
 
