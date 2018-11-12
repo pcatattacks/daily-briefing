@@ -17,7 +17,7 @@ from apiclient import errors
 
 '''
 def cal_datetime_to_readable(datetime_in):
-    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-08:00")
+    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
 
     ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
 
@@ -100,6 +100,184 @@ class Calendar:
     ''' Keyword match to events in daily calendar. '''
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
         return 0
+
+    def getEventsWithAttendees(attendees):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        resultEvents = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            for person in attendees:
+                for personAttend in event['attendees']:
+                    realPerson = personAttend.get('displayName')
+                    if person == realPerson:
+                        resultEvents.append(event)
+                        break;
+        events_processed = []
+        for event in resultEvents:
+            events_processed.append(Event(event))
+        return events_processed
+
+
+    def getEventsAtTime(time):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        resultEvents = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            print(start)
+            if time == start:
+                resultEvents.append(event)
+        events_processed = []
+        for event in resultEvents:
+            events_processed.append(Event(event))
+        return events_processed
+
+    def getEventsAtLocation(location):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        resultEvents = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            if location == event['location']:
+                resultEvents.append(event)
+        events_processed = []
+        for event in resultEvents:
+            events_processed.append(Event(event))
+        return events_processed
+
+
+    def getEventsWithKeywordsInTitle(keywords):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        resultEvents = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            for word in keywords:
+                if word in event['summary']:
+                    resultEvents.append(event)
+        events_processed = []
+        for event in resultEvents:
+            events_processed.append(Event(event))
+        return events_processed
+
+
+    def getEventsWithKeywordsInDescription(keywords):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        resultEvents = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            for word in keywords:
+                if word in event['description']:
+                    resultEvents.append(event)
+        events_processed = []
+        for event in resultEvents:
+            events_processed.append(Event(event))
+        return events_processed
+
+    def eventIsConfirmed(eventTitle):
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                             singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            print(eventTitle)
+            if event['summary'] == eventTitle:
+                if event['status'] == "confirmed":
+                    print('True')
+                else:
+                    print('False')
 
 
 
