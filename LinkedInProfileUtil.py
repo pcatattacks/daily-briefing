@@ -2,6 +2,7 @@
 import requests as req
 # from bs4 import BeautifulSoup as bs
 from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
+import json
 
 # REQUEST_URL=  "https://www.googleapis.com/customsearch/v1"
 
@@ -40,10 +41,13 @@ def get_linkedin_profiles_by_query(query):
     }
     r = req.get(REQUEST_URL, params=params)
     results = r.json()
-    profiles = [ {"profile_url":item["formattedUrl"], "hcard": item["pagemap"]["hcard"][0] } for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
-    # "info":item["pagemap"]["person"][0],
+    profiles = None
+    try:
+        profiles = [ {"profile_url":item["formattedUrl"], "hcard": item["pagemap"]["hcard"][0] } for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
+    except:
+        print "Something went wrong! The result of the request was:"
+        print(json.dumps(results, indent=2))
     return profiles
-
 
 # This doesn't work, linkedin's gotten a lot smarter about preventing scraping.
 # def get_linkedin_profile_details(profile_url):
