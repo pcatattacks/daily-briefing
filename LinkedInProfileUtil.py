@@ -20,16 +20,17 @@ import json
 # # print json.dumps(results, indent=2)
 
 # profiles = [{
-#     "profile_url":item["formattedUrl"], 
+#     "profile_url":item["formattedUrl"],
 #     # "info":item["pagemap"]["person"][0],
 #     "hcard": item["pagemap"]["hcard"][0]
-#     } 
+#     }
 #     for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
 
 # profiles = [ item for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
 
 # print json.dumps(profiles, indent=2)
 # this works ^
+
 
 def get_linkedin_profiles_by_query(query):
     REQUEST_URL=  "https://www.googleapis.com/customsearch/v1"
@@ -47,8 +48,6 @@ def get_linkedin_profiles_by_query(query):
         print "Something went wrong! The result of the request was:"
         print(json.dumps(results, indent=2))
     return profiles
-    # "info":item["pagemap"]["person"][0],
-    
 
 # This doesn't work, linkedin's gotten a lot smarter about preventing scraping.
 # def get_linkedin_profile_details(profile_url):
@@ -57,7 +56,7 @@ def get_linkedin_profiles_by_query(query):
 #         # 'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 #         # 'accept-encoding': 'gzip, deflate, sdch, br'
 #     }
-    
+
 #     res = req.get(profile_url, headers=headers)
 #     data = res.text
 #     print data
