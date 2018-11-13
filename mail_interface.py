@@ -29,9 +29,10 @@ def internalDate_to_timestamp(internalDate):
 class Mail:
 
     ''' Get authorized service for gmail API with specified account from DailyBriefing.py'''
-    def __init__(self, service, user_id, maxResults):
+    def __init__(self, service, user_id, maxResults, user):
         self.service = service
         self.user_id = user_id
+        self.user = user
         self.maxResults = maxResults
 
 

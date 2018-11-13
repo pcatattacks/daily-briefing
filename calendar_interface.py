@@ -43,9 +43,10 @@ class Calendar:
         }
 
     ''' Initiate authorized service for gmail API with specified account '''
-    def __init__(self, service, user_id, maxResults):
+    def __init__(self, service, user_id, maxResults, user):
         self.service = service
         self.user_id = user_id
+        self.user = user
         self.maxResults = maxResults
 
     ''' Get the next ten upcoming events'''
@@ -254,7 +255,7 @@ class Event:
     # link = ""
     # source = ""
     # attachments = []
-
+    keyword = ""
     # relevant_emails = []
 
     def __init__(self, event):
@@ -265,6 +266,9 @@ class Event:
 
         if 'summary' in event:
             self.summary = event['summary']
+            if "meeting with" in self.summary:
+                self.attendees.append(self.summary.split("with")[1].split("to discuss")[0])
+                self.keyword = self.summary.split("with")[1].split("to discuss")[1]
         if 'location' in event:
             self.location = event['location']
         if 'description' in event:
@@ -273,9 +277,12 @@ class Event:
             self.link = event['link']
         if 'attendees' in event:
             for x in event['attendees']:
-                self.attendees.append(x['displayName'].encode('utf-8'))
+                if 'displayName' in x:
+                    event_attendee = x['displayName'].encode('utf-8')
+                    if event_attendee not in self.attendees:
+                        self.attendees.append(event_attendee)
+        print("***\n\n" + repr(self) + "\n\n ***")
 
-        # self.speech =
 
     def __repr__(self, type='day'):
         out_str = '{} at {}\n' #'start: {}\nend: {}\n'

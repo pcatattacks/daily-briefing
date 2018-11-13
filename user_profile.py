@@ -5,7 +5,7 @@
 class User:
     name = "Andre Ehrlich"
     school = "Northwestern"
-    timezone = "gmt-8:00"
+    timezone = "-6:00"
 
 
     def __init__(self, name, school, timezone):
@@ -13,7 +13,12 @@ class User:
         self.school = school
         self.timezone = timezone
 
+    def __repr__(self):
+        return """ {}, {}""".format(self.name, self.school) #, self.timezone)
 
-Andre = User()
+user_dict = {
+    "Andre": User("Andre Ehrlich", "Northwestern", "-6:00"),
+    "Joe": User("Joe Chookaszian", "Northwestern", "-8:00"),
+}
 
-print(Andre)
+# print(user_dict['Andre'])

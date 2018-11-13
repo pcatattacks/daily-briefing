@@ -9,6 +9,8 @@ from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARC
 from LinkedInProfileUtil import get_linkedin_profiles_by_query
 import json
 
+from user_profile import *
+
 '''
     This seems to avoid encoding errors, but notice that there are
     ascii codes in emails that are still not being encoded
@@ -69,6 +71,9 @@ class DailyBriefing:
     ''' maxResults limits the number of items returned by api call '''
     maxResults = 5
 
+    ''' User's have configurations like name, school, timezone, to help us process information'''
+    user = user_dict["Andre"]
+
     ''' Initiate authorized service for gmail API with specified account '''
     def __init__(self):
         store = file.Storage('config/token.json')
@@ -82,8 +87,8 @@ class DailyBriefing:
         self.cal_service = build('calendar', 'v3', http=creds.authorize(Http()))
 
         ''' Create a Mail & Calendar object '''
-        self.mail = Mail(self.mail_service, self.user_id, self.maxResults)
-        self.cal = Calendar(self.cal_service, self.user_id, self.maxResults)
+        self.mail = Mail(self.mail_service, self.user_id, self.maxResults, self.user)
+        self.cal = Calendar(self.cal_service, self.user_id, self.maxResults, self.user)
 
     def test(self):
 
@@ -178,7 +183,7 @@ class DailyBriefing:
             ''' At start-up, ask the user for a commmand
             the default command is to list the events for today '''
             if event_counter < 0:
-                speak("Hello! Would you like your daily briefing?", "intro_0")
+                speak("Hello, {}! Would you like your daily briefing?".format(self.user), "intro_0")
                 print(">>> ")
 
                 ''' Wait indefinitely for user input '''
@@ -235,6 +240,16 @@ class DailyBriefing:
                 #     break
 
                 if new_events_flag:
+                    # process new events
+                    # remove self from attendee list
+                    for event in new_events:
+                        if self.user.name in event.attendees:
+                            event.attendees.remove(self.user.name)
+                        # if event.sender == self.user.name:
+                            # event.sender = "you"
+                        if event.creator == self.user.name:
+                            event.creator = "you"
+
                     new_events_flag = 0
                     prepared_events = prepare_list_of_events_to_brief(new_events)
 
@@ -252,11 +267,14 @@ class DailyBriefing:
                         speak(text=briefing_subject, title="briefing_subject")
 
                     ''' Get sumplementary information from emails matching terms from summary '''
-                    longest_word_in_summary = max(this_event.summary.split(" "), key=len)
-                    if len(this_event.summary.split(" ")) > 3:
-                        query = longest_word_in_summary
+                    if this_event.keyword:
+                        query = this_event.keyword
                     else:
-                        query = this_event.summary
+                        longest_word_in_summary = max(this_event.summary.split(" "), key=len)
+                        if len(this_event.summary.split(" ")) > 3:
+                            query = longest_word_in_summary
+                        else:
+                            query = this_event.summary
                     msgs = self.mail.ListMessagesMatchingQuery(query)
 
                     ''' print and read the event out loud '''
@@ -280,19 +298,21 @@ class DailyBriefing:
                         #     skip = True
                         #     break
 
-                    ''' For this event, pull up the latest email related to it '''
+                    ''' Pull up the latest email related to this event'''
                     linkedin_profiles = None
                     if msgs:
-                        speak("Pulling up the latest relevant email for " + query + "\n " + msgs[0].subject, "relevant_email_status_0")
-                        speak(repr(msgs[0]), "relevant_email")
-                        linkedin_profiles = get_linkedin_profiles_by_query(msgs[0].recipients[0])
+                        speak("Email related to " + query + ":\n " + msgs[0].subject, "relevant_email_status_0")
+                        # speak(repr(msgs[0]), "relevant_email")
 
+                    ''' Linkedin for attendees '''
+                    linkedin_profiles = get_linkedin_profiles_by_query(this_event.attendees[0])
                     if linkedin_profiles:
-                        job_title = linkedin_profiles[0]['hcard']['title']
+                        hcard = linkedin_profiles[0]['hcard']
+                        if 'title' in hcard:
+                            job_title = hcard['title']
+                        else:
+                            job_title = ""
                         speak(job_title, 'job_title')
-
-                    speak("Pulling up the latest relevant email for " + longest_word_in_summary + "\n ", "relevant_email_status_0")
-                    # speak(repr(msgs[0]), "relevant_email")
 
                     ''' increment counter to read next event '''
                     event_counter += 1
