@@ -209,8 +209,13 @@ class DailyBriefing:
 
                 elif "events at " in user_in:
                     ''' user input e.g.:  what are my events at tech? '''
-                    location = user_in.split("events at ")[1] # location = tech
+                    location = user_in.split("events at ")[1].rstrip() # location = tech
                     new_events = self.cal.getEventsAtLocation(location)
+                    new_events_flag = 1
+
+                elif "events with " in user_in:
+                    person = user_in.split("events with ")[1].rstrip() # location = tech
+                    new_events = self.cal.getEventsWithAttendees(person)
                     new_events_flag = 1
 
                 elif "am" in user_in or "pm" in user_in:

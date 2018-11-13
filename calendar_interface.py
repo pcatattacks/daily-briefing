@@ -106,24 +106,34 @@ class Calendar:
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
         return 0
 
-    def getEventsWithAttendees(self, attendees):
+    def getEventsWithAttendees(self, attendee):
+        print('getEventsWithAttendees ', attendee)
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
 
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
 
-        print('getEventsWithAttendees ', attendees)
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
             print('No upcoming events found.')
         for event in events:
-            for person in attendees:
-                for personAttend in event['attendees']:
-                    realPerson = personAttend.get('displayName')
-                    if person == realPerson:
-                        resultEvents.append(event)
-                        break;
+            for personAttend in event['attendees']:
+                realPerson = personAttend.get('displayName')
+                print(personAttend)
+                if attendee.upper() == realPerson.upper():
+                    resultEvents.append(event)
+                    break;
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -131,11 +141,22 @@ class Calendar:
 
 
     def getEventsAtTime(self, time):
-
         print('getEventsAtTime', time)
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
+
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
+
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -151,18 +172,27 @@ class Calendar:
         return events_processed
 
     def getEventsAtLocation(self, location):
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
 
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
 
-        print('getEventsAtLocation, ', location)
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
             print('No upcoming events found.')
         for event in events:
-            if location == event['location']:
+            if location.upper() == event['location'].upper():
                 resultEvents.append(event)
         events_processed = []
         for event in resultEvents:
@@ -174,9 +204,21 @@ class Calendar:
 
 
         print('getEventsWithKeywordsInTitle, ', keywords)
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
+
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
+
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -195,9 +237,21 @@ class Calendar:
 
 
         print('getEventsWithKeywordsInDescription', keywords)
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
+
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
+
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -215,9 +269,21 @@ class Calendar:
 
 
         print('eventIsConfirmed,' + eventTitle + "?")
-        events_result = self.service.events().list(calendarId='primary', timeMin=self.now, timeMax = self.end_of_day,
-                                             singleEvents=True,
-                                            orderBy='startTime').execute()
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
+
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
+
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         if not events:
             print('No upcoming events found.')
