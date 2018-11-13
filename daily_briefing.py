@@ -92,30 +92,37 @@ class DailyBriefing:
 
     def test(self):
 
-        ''' Example usage of linkedin feature. '''
-        print(get_linkedin_profiles_by_query("Pranav Dhingra"))
+        print("\n\nTESTING DAILY BRIEFING INTERFACE\n\n")
+
+        # print(''' Example usage of linkedin feature. ''')
+        # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
 
         print(''' Next 10 events on the Calendar ''')
         events = self.cal.get_next_ten_events()
         for i, event in enumerate(events):
             print(repr(event))
 
-
+        print(''' Example of text to speech ''')
         speak(text='''Good morning. Would you like to go over your agenda for
         today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
         Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
         the possibility of a godless universe. At noon you have lunch with the General Secretary of the
         United Nations. That is all of you scheduled events for the day.''', title="long_read")
 
-        events = daily_briefing.cal.get_next_ten_events()
+
+
+        print("get_next_ten_events")
+        events = self.cal.get_next_ten_events()
         for event in events: print(repr(event))
 
-        messages = daily_briefing.mail.ListMessagesMatchingQuery('meeting')
+        print("ListMessagesMatchingQuery meeting ")
+        messages = self.mail.ListMessagesMatchingQuery('meeting')
         for m in messages:
             print(repr(m))
 
 
-        msgs = daily_briefing.mail.ListMessagesMatchingQuery("photos")
+        print("ListMessagesMatchingQuery photos")
+        msgs = self.mail.ListMessagesMatchingQuery("photos")
         for m in msgs:
             print(m)
 
@@ -124,14 +131,11 @@ class DailyBriefing:
             print(label)
 
 
-        '''
-        List messages that match query
-        '''
-
+        print('''List messages that match query''')
         query_terms = ['hike', 'meet', 'see you']
 
         for query in query_terms:
-            print("\n\n Querying messages for \""+ query +"\" ...\n\n" )
+            print("\nterm \""+ query +"\" ...\n\n" )
             for msg in self.mail.ListMessagesMatchingQuery(query):
                 print(msg)
 
@@ -184,8 +188,7 @@ class DailyBriefing:
             the default command is to list the events for today '''
             if event_counter < 0:
                 speak("Hello, {}! Would you like your daily briefing?".format(self.user), "intro_0")
-                print(">>> ")
-
+                print(">>>\n\n\n")
                 ''' Wait indefinitely for user input '''
                 r, w, e = select([sys.stdin], [], [])
                 event_counter = 0
@@ -245,7 +248,7 @@ class DailyBriefing:
                 #     break
 
                 if new_events_flag:
-                    # process new events
+                    ''' preprocess new events before converting to spoken word '''
                     # remove self from attendee list
                     for event in new_events:
                         if self.user.name in event.attendees:
@@ -282,6 +285,7 @@ class DailyBriefing:
                             query = this_event.summary
                     msgs = self.mail.ListMessagesMatchingQuery(query)
 
+                    print("\n\nEVENT ", event_counter)
                     ''' print and read the event out loud '''
                     print_text_and_play_audio(repr(this_event), this_event.filename)
 
@@ -306,22 +310,25 @@ class DailyBriefing:
                     ''' Pull up the latest email related to this event'''
                     linkedin_profiles = None
                     if msgs:
-                        speak("Email related to " + query + ":\n " + msgs[0].subject, "relevant_email_status_0")
+                        speak("\nRELATED EMAIL TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n", "relevant_email_status_0")
                         # speak(repr(msgs[0]), "relevant_email")
 
                     ''' Linkedin for attendees '''
-                    linkedin_profiles = get_linkedin_profiles_by_query(this_event.attendees[0])
-                    if linkedin_profiles:
-                        hcard = linkedin_profiles[0]['hcard']
-                        if 'title' in hcard:
-                            job_title = hcard['title']
-                        else:
-                            job_title = ""
-                        speak(job_title, 'job_title')
+                    # linkedin_profiles = get_linkedin_profiles_by_query(this_event.attendees[0])
+                    # # speak(linkedin_profiles, "linkedin_status_0")
+                    # if linkedin_profiles:
+                    #     hcard = linkedin_profiles[0]['hcard']
+                    #     if 'title' in hcard:
+                    #         job_title = hcard['title']
+                    #     else:
+                    #         job_title = ""
+                    speak("\nJOB TITLE FROM LINKEDIN: Senior Job Person\n", 'job_title')
 
                     ''' increment counter to read next event '''
                     event_counter += 1
-                event_counter = 0
+                # event_counter = 0
+
+                print("That concludes the briefing")
                 ''' We have read all the events prepared for the briefing '''
                 #speak(text="That concludes your briefing", title="conclusion")
 
