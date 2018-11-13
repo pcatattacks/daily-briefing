@@ -344,9 +344,7 @@ class Event:
         if 'attendees' in event:
             for x in event['attendees']:
                 if 'displayName' in x:
-                    event_attendee = x['displayName'].encode('utf-8')
-                    if event_attendee not in self.attendees:
-                        self.attendees.append(event_attendee)
+                    self.attendees.append(x['displayName'].encode('utf-8'))
 
 
     def __repr__(self, type='day'):
