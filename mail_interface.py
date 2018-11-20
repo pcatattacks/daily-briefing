@@ -145,21 +145,19 @@ class Mail:
 '''
 class Message:
 
-    id = None
-    sender = ""
-    recipients = []
-    subject = ""
-    snippet = ""
-    body = ""
-    timestamp = ""
-    thread = None
-    labels = []
-    important = False
-
-
+    
     ''' Parse gmail api's returned message into object we an easily work with '''
     def __init__(self, message):
-
+        self.sender = ""
+        self.recipients = []
+        self.subject = ""
+        self.snippet = ""
+        self.body = ""
+        self.timestamp = ""
+        self.thread = None
+        self.labels = []
+        self.important = False
+        
         self.id = message['id']
 
         ''' Get labels, e.g. ['CHAT', 'IMPORTANT', 'CATEGORY_PERSONAL', 'INBOX'] '''
