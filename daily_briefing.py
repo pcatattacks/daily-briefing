@@ -164,190 +164,208 @@ class DailyBriefing:
     #     # TODO This is bonus points
     #     pass
 
+    # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
+    def listen_for_user_input(self, timeout=120):
+
+        print("\n\n>>>")
+
+        user_in = ""
+        ''' Wait indefinitely for user input '''
+        r, w, e = select([sys.stdin], [], [], timeout)
+
+        ''' If the user has said something, parse user input and follow their commands '''
+        if sys.stdin in r:
+
+            user_in = sys.stdin.readline().lower() # make userinput all lowercase
+
+        return user_in
+
+    def get_job_title_from_linked_in(self, name):
+        linkedin_profiles = get_linkedin_profiles_by_query(name)
+        # speak(linkedin_profiles, "linkedin_status_0")
+        if linkedin_profiles:
+            hcard = linkedin_profiles[0]['hcard']
+            if 'title' in hcard:
+                job_title = hcard['title']
+            else:
+                job_title = "No Job Title Found"
+
+        return job_title
+
+
+    '''
+        The parse_user_input function:
+        input arg: user_in (string)
+        Parses for keywords to make the appropriate Google API call
+    '''
+    def parse_user_input(self, user_in):
+
+        new_events_flag = 0
+        new_events = []
+        briefing_subject = ""
+        immediate_response = ""
+
+        if not user_in:
+            return new_events_flag, new_events, "No user input"
+
+        if any(word in user_in for word in ["daily briefing", "today", "schedule"]):
+            ''' the default is get_next_ten_events '''
+            speak("Ok, preparing today's events...", "daily_briefing_response_0")
+            # events_type = 'day'
+            new_events = self.cal.get_next_ten_events()
+            new_events_flag = 1
+            briefing_subject = "Here are your next ten events"
+
+        elif "events at " in user_in:
+            ''' user input e.g.:  what are my events at tech? '''
+            location = user_in.split("events at ")[1].rstrip() # location = tech
+            new_events = self.cal.getEventsAtLocation(location)
+            new_events_flag = 1
+            briefing_subject = "Here are events at {}".format(location)
+
+        elif "events with " in user_in:
+            person = user_in.split("events with ")[1].rstrip() # location = tech
+            new_events = self.cal.getEventsWithAttendees(person)
+            new_events_flag = 1
+            briefing_subject = "Here are events with {}".format(person)
+
+        elif any(word in user_in for word in ["am", "pm"]):
+            ''' user input e.g.: what is my 10AM? '''
+            words = user_in.split()
+            time = words[len(words)-1]
+            if "am" in time:
+                time = time.split("am")[0]
+            else:
+                time = time.split("pm")[0] + 12
+            new_events = self.cal.getEventsAtTime(time)
+            new_events_flag = 1
+            briefing_subject = "Here is your event at {}".format(time)
+
+        elif "last event" in user_in:
+            ''' get more information about event from additional sources '''
+            speak("getting more info on this event", "more_info_status")
+            # getmoreinfofunc
+
+        # ''' Parse requests for more information on something '''
+        elif "tell me more about" in user_in:
+            words = user_in.split()
+            index = words.index("about")
+            person_name = words[index+1:].join(" ")
+            if event_counter == -1: # if events not pulled yet
+                pass # TODO
+            elif event_counter >= 0: # if we have events
+                pass # TODO
+            pass
+        elif "who is" in user_in:
+            words = user_in.split()
+            index = words.index("is")
+            person_name = words[index+1:].join(" ")
+            if event_counter == -1: # if events not pulled yet
+                pass # TODO
+            elif event_counter >= 0: # if we have events
+                pass # TODO
+            pass
+        # elif "wait" in user_in:
+        else:
+            speak("sorry, I don't know what to do for {}".format(user_in), "response_0")
+
+
+
+        return new_events_flag, new_events, briefing_subject
+
+    def preprocess_list_of_events(self, events):
+        ''' preprocess new events before converting to spoken word '''
+        for event in events:
+            '''Remove your name from attendee list'''
+            for attendee in event.attendees:
+                if self.user.name == attendee:
+                    event.attendees.remove(self.user.name)
+                else:
+                    ''' Linkedin for attendees '''
+                    attendee += " ({})".format(get_job_title_from_linked_in(attendee))
+            if event.creator == self.user.name:
+                event.creator = "you"
+
+            ''' Get sumplementary information from emails matching terms from summary '''
+            if event.keyword:
+                query = this_event.keyword
+            else:
+                longest_word_in_summary = max(event.summary.split(" "), key=len)
+                if len(event.summary.split(" ")) > 3:
+                    query = longest_word_in_summary
+                else:
+                    query = event.summary
+            msgs = self.mail.ListMessagesMatchingQuery(query)
+
+            ''' Pull up the latest email related to this event'''
+            linkedin_profiles = None
+            if msgs:
+                event.related_email = "\n EMAIL RELATED TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n"
+                # speak("\nRELATED EMAIL TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n", "relevant_email_status_0")
+                # speak(repr(msgs[0]), "relevant_email")
+
+        return events
+
     def converse(self):
 
         ''' What is the user asking to be briefed on?'''
-        briefing_subject = ""
-
-        '''
-        Initialize event_counter to -1 to start off with a prompt
-        before reading list of todays events
-        '''
-        event_counter = -1
+        new_events_flag, new_events, briefing_subject = 0, [], "No results"
 
         ''' Timeout in seconds to wait for user input '''
-        timeout = 3
+        prepared_events = []
+
+        ''' At start-up, wait for the user to give a commmand
+            the default command should be to list the events for today '''
+        speak("Hello, {}!".format(repr(self.user).split(",")[0].split()[0]), "intro_0")
+
+        ''' Wait indefinitely for user input '''
+        user_in = self.listen_for_user_input();
 
         ''' the big loop that runs the show '''
         while True:
 
+            if not user_in:
+                ''' If we've passed the introduction, wait 10.5 seconds for user input '''
+                user_in = self.listen_for_user_input(10.5)
+
             ''' new_events_flag marks when user has made a request for a different set of events to be briefed on'''
-            new_events_flag = 0
+            new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
+            user_in = ""
 
-            ''' At start-up, ask the user for a commmand
-            the default command is to list the events for today '''
-            if event_counter < 0:
-                speak("Hello, {}! Would you like your daily briefing?".format(self.user), "intro_0")
-                print(">>>\n\n\n")
-                ''' Wait indefinitely for user input '''
-                r, w, e = select([sys.stdin], [], [])
-                event_counter = 0
+            if new_events_flag:
+                new_events = self.preprocess_list_of_events(new_events)
+                prepared_events = prepare_list_of_events_to_brief(new_events)
+                new_events_flag = 0 # reset flag
 
-            else:
-                ''' If we've passed the introduction, wait 1.5 seconds for user input '''
-                r, w, e = select([sys.stdin], [], [], 10.5)
-
-            ''' If the user has said something, parse user input and follow their commands '''
-            if sys.stdin in r:
-
-                # make userinput all lowercase
-                user_in = sys.stdin.readline().lower()
-
-                if "go" in user_in or "yes" in user_in: # "schedule" in user_in and "today" in user_in:
-                    ''' the default is get_next_ten_events '''
-                    briefing_subject = "Ok, preparing today's events...\n"
-                    # events_type = 'day'
-                    new_events = self.cal.get_next_ten_events()
-                    new_events_flag = 1
-
-                elif "events at " in user_in:
-                    ''' user input e.g.:  what are my events at tech? '''
-                    location = user_in.split("events at ")[1].rstrip() # location = tech
-                    new_events = self.cal.getEventsAtLocation(location)
-                    new_events_flag = 1
-
-                elif "events with " in user_in:
-                    person = user_in.split("events with ")[1].rstrip() # location = tech
-                    new_events = self.cal.getEventsWithAttendees(person)
-                    new_events_flag = 1
-
-                elif "am" in user_in or "pm" in user_in:
-                    ''' user input e.g.: what is my 10AM? '''
-                    words = user_in.split()
-                    time = words[len(words)-1]
-                    if "am" in time:
-                        time = time.split("am")[0]
-                    else:
-                        time = time.split("pm")[0] + 12
-                    new_events = self.cal.getEventsAtTime(time)
-                    new_events_flag = 1
-
-                elif "last event" in user_in:
-                    ''' get more information about event from additional sources '''
-                    speak("getting more info on this event", "more_info_status")
-                    # if events_to_brief:
-                    #     speak(self.mail.get_information_from_email_related_to_event(events_to_brief[event_counter-1]))
-
-                # elif "evening" in user_in and "week" in user_in:
-                #     ''' get all nightly events '''
-                #     briefing_subject = "Here are this week's events after 5pm...\n"
-                #     events_to_brief = map(repr, self.cal.get_weeks_events_time_of_day("evening"))
-
-                # elif "stop" in user_in:
-                #     speak("stopping...", "stopping_status")
-                #     break
-                
-                elif "tell me more about" in user_in:
-                    words = user_in.split()
-                    index = words.index("about")
-                    person_name = words[index+1:].join(" ")
-                    if event_counter == -1: # if events not pulled yet
-                        pass # TODO
-                    elif event_counter >= 0: # if we have events
-                        pass # TODO
-                    pass
-                elif "who is" in user_in:
-                    words = user_in.split()
-                    index = words.index("is")
-                    person_name = words[index+1:].join(" ")
-                    if event_counter == -1: # if events not pulled yet
-                        pass # TODO
-                    elif event_counter >= 0: # if we have events
-                        pass # TODO
-                    pass
-
-                if new_events_flag:
-                    ''' preprocess new events before converting to spoken word '''
-                    # remove self from attendee list
-                    for event in new_events:
-                        if self.user.name in event.attendees:
-                            event.attendees.remove(self.user.name)
-                        # if event.sender == self.user.name:
-                            # event.sender = "you"
-                        if event.creator == self.user.name:
-                            event.creator = "you"
-
-                    new_events_flag = 0
-                    prepared_events = prepare_list_of_events_to_brief(new_events)
-
-            ''' If there are events loaded for briefing... '''
+            ''' If there are event files loaded for briefing... '''
             if prepared_events:
 
                 ''' Read out next event '''
-                skip = False
-                while event_counter < len(prepared_events):
-
-                    this_event = prepared_events[event_counter]
+                for event_counter, this_event in enumerate(prepared_events):
 
                     ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
                     if event_counter == 0:
                         speak(text=briefing_subject, title="briefing_subject")
 
-                    ''' Get sumplementary information from emails matching terms from summary '''
-                    if this_event.keyword:
-                        query = this_event.keyword
-                    else:
-                        longest_word_in_summary = max(this_event.summary.split(" "), key=len)
-                        if len(this_event.summary.split(" ")) > 3:
-                            query = longest_word_in_summary
-                        else:
-                            query = this_event.summary
-                    msgs = self.mail.ListMessagesMatchingQuery(query)
-
                     print("\n\nEVENT ", event_counter)
-                    ''' print and read the event out loud '''
-                    print_text_and_play_audio(repr(this_event), this_event.filename)
 
-                    ''' Handling interruptions...
-                    Listen for user input for 1.5 seconds '''
-                    r, w, e = select([sys.stdin], [], [], 1.5) # wait for 1.5 seconds
+                    ''' print and read the event out loud line by line '''
+                    for i, line in enumerate(this_event.filenames):
+                        print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
 
-                    '''
-                    If user said something, read user input and follow commands
-                    '''
-                    if sys.stdin in r:
-                        user_in = sys.stdin.readline()
-                        print("You entered ", user_in)
+                        ''' Handling interruptions... '''
+                        user_in = self.listen_for_user_input(timeout=5)
+                        new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
+                        user_in = ""
+                        if new_events_flag:
+                            break
 
-                        # TODO Sketch out what functionality for interrupting the event...
-                        #       like asking for more information on the location or time or subject.
+                    if new_events_flag:
+                        break
 
-                        # if "next event" in user_in or "skip" in user_in:
-                        #     skip = True
-                        #     break
+                # If we have finished going through all prepared_events, reset the list of prepared events
+                prepared_events = []
 
-                    ''' Pull up the latest email related to this event'''
-                    linkedin_profiles = None
-                    if msgs:
-                        speak("\nRELATED EMAIL TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n", "relevant_email_status_0")
-                        # speak(repr(msgs[0]), "relevant_email")
-
-                    ''' Linkedin for attendees '''
-                    # linkedin_profiles = get_linkedin_profiles_by_query(this_event.attendees[0])
-                    # # speak(linkedin_profiles, "linkedin_status_0")
-                    # if linkedin_profiles:
-                    #     hcard = linkedin_profiles[0]['hcard']
-                    #     if 'title' in hcard:
-                    #         job_title = hcard['title']
-                    #     else:
-                    #         job_title = ""
-                    speak("\nJOB TITLE FROM LINKEDIN: Senior Job Person\n", 'job_title')
-
-                    ''' increment counter to read next event '''
-                    event_counter += 1
-                # event_counter = 0
-
-                print("That concludes the briefing")
                 ''' We have read all the events prepared for the briefing '''
                 #speak(text="That concludes your briefing", title="conclusion")
 

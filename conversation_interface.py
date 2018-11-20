@@ -32,12 +32,15 @@ def prepare_list_of_events_to_brief(events):
 
     for x, event in enumerate(events):
 
-        # print(event)
+        # print(x, event)
 
         ''' Say which number event in the day this is '''
         event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
+        event.lines = event_str.split("\n")
+        event.filenames = []
+        for i, line in enumerate(event.lines):
+            event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
 
-        event.filename = create_file_to_speak(event_str, title="event_"+str(x))
         # print(event.filename, event_str)
 
     return events
@@ -72,4 +75,4 @@ def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
     print(text)
 
     ''' Load and playlatest daily_briefing mp3 file'''
-    # mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
+    mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
