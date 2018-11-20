@@ -13,7 +13,7 @@ def main():
     """
 
 
-    getEventsAtTime("17:30")
+    getEventsInRange("19:30", "23")
 
 def getEventsWithAttendees(attendees):
     store = file.Storage('token.json')
@@ -45,6 +45,52 @@ def getEventsWithAttendees(attendees):
     for event in resultEvents:
         print(event['summary']);
 
+def getEventsInRange(timeStart, timeEnd):
+    time_zone = pytz.timezone('America/Chicago')
+    date = datetime.datetime.now().date()
+    if ":" in timeStart:
+        minute = int(timeStart.split(":")[1])
+        hour = int(timeStart.split(":")[0])
+    else:
+        minute = 0
+        hour = int(timeStart)
+    
+    if ":" in timeEnd:
+        minuteEnd = int(timeEnd.split(":")[1])
+        hourEnd = int(timeEnd.split(":")[0])
+    else:
+        minuteEnd = 0
+        hourEnd = int(timeEnd)
+    timeStartF = datetime.time(hour, minute)
+    timeEndF = datetime.time(hourEnd, minuteEnd)
+    date_time_end = datetime.datetime.combine(date, timeEndF)
+    date_time = datetime.datetime.combine(date, timeStartF)
+    date_time_end = time_zone.localize(date_time_end)
+    date_time = time_zone.localize(date_time)
+    date_time_end = date_time_end.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+    date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+
+    store = file.Storage('token.json')
+    creds = store.get()
+    if not creds or creds.invalid:
+        flow = client.flow_from_clientsecrets('config/credentials.json', SCOPES)
+        creds = tools.run_flow(flow, store)
+    service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+    # Call the Calendar API
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+    print('Getting today\'s events')
+    events_result = service.events().list(calendarId='primary', timeMin=date_time, timeMax = date_time_end,
+                                         singleEvents=True,
+                                        orderBy='startTime').execute()
+    events = events_result.get('items', [])
+    resultEvents = events
+    if not events:
+        print('No upcoming events found.')
+    for event in resultEvents:
+        print(event['summary']);
 
 def getEventsAtTime(time):
     time_zone = pytz.timezone('America/Chicago')
@@ -58,7 +104,6 @@ def getEventsAtTime(time):
     time = datetime.time(hour, minute)
     date_time = datetime.datetime.combine(date, time)
     date_time = time_zone.localize(date_time)
-    utc_date_time = date_time.astimezone(pytz.utc)
     date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
     store = file.Storage('token.json')
     creds = store.get()
