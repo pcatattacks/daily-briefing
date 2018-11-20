@@ -16,8 +16,11 @@ from apiclient import errors
             End time: 2014-06-03 10:00 AM
 
 '''
-def cal_datetime_to_readable(datetime_in):
-    s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
+def cal_datetime_to_readable(datetime_in, date_format):
+    if date_format == 'dateTime':
+        s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
+    elif date_format == 'date':
+        s = datetime.strptime(datetime_in, "%Y-%m-%d")
 
     ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
 
@@ -140,42 +143,31 @@ class Calendar:
         return events_processed
 
 
-    def getEventsAtTime(time):
-        time_zone = pytz.timezone('America/Chicago')
-        date = datetime.datetime.now().date()
-        if ":" in time:
-            minute = int(time.split(":")[1])
-            hour = int(time.split(":")[0])
-        else:
-            minute = 0
-            hour = int(time)
-        time = datetime.time(hour, minute)
-        date_time = datetime.datetime.combine(date, time)
-        date_time = time_zone.localize(date_time)
-        utc_date_time = date_time.astimezone(pytz.utc)
-        date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('config/credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
+    def getEventsAtTime(self, time):
+        print('getEventsAtTime', time)
+        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        end_of_day = now + timedelta(days=1)
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+        now = now.isoformat() + 'Z'
+        end_of_day = end_of_day.isoformat() + 'Z'
+        # print('Getting the upcoming 10 events')
 
-        print('Getting today\'s events')
-        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
-                                            singleEvents=True,
-                                            orderBy='startTime').execute()
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            # maxResults=self.maxResults,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
             print('No upcoming events found.')
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            if date_time == start:
+            print(start)
+            if time == start:
                 resultEvents.append(event)
         events_processed = []
         for event in resultEvents:
@@ -337,8 +329,17 @@ class Event:
 
     def __init__(self, event):
 
-        self.start = cal_datetime_to_readable(event['start']['dateTime'])
-        self.end = cal_datetime_to_readable(event['start']['dateTime'])
+        event_start = event['start']
+        event_end = event['end']
+
+        if 'dateTime' in event_start:
+            self.start = cal_datetime_to_readable(event_start['dateTime'], 'dateTime')
+        elif 'date' in event_start:
+            self.start = cal_datetime_to_readable(event_start['date'], 'date')
+        if 'dateTime' in event_end:
+            self.start = cal_datetime_to_readable(event_end['dateTime'], 'dateTime')
+        elif 'date' in event_end:
+            self.start = cal_datetime_to_readable(event_end['date'], 'date')
         self.id = event['id']
 
         if 'summary' in event:
