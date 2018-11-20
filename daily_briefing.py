@@ -232,7 +232,7 @@ class DailyBriefing:
                     new_events = self.cal.getEventsAtTime(time)
                     new_events_flag = 1
 
-                elif "more info on last event" in user_in:
+                elif "last event" in user_in:
                     ''' get more information about event from additional sources '''
                     speak("getting more info on this event", "more_info_status")
                     # if events_to_brief:
@@ -246,6 +246,25 @@ class DailyBriefing:
                 # elif "stop" in user_in:
                 #     speak("stopping...", "stopping_status")
                 #     break
+                
+                elif "tell me more about" in user_in:
+                    words = user_in.split()
+                    index = words.index("about")
+                    person_name = words[index+1:].join(" ")
+                    if event_counter == -1: # if events not pulled yet
+                        pass # TODO
+                    elif event_counter >= 0: # if we have events
+                        pass # TODO
+                    pass
+                elif "who is" in user_in:
+                    words = user_in.split()
+                    index = words.index("is")
+                    person_name = words[index+1:].join(" ")
+                    if event_counter == -1: # if events not pulled yet
+                        pass # TODO
+                    elif event_counter >= 0: # if we have events
+                        pass # TODO
+                    pass
 
                 if new_events_flag:
                     ''' preprocess new events before converting to spoken word '''

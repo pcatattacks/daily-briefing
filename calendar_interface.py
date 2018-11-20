@@ -313,21 +313,20 @@ class Calendar:
 
 class Event:
 
-    summary = ''
-    start = "" # what format is time? UTC
-    end = ""
-    location = "" # (address)
-    description = ""
-    creator = ""
-    # organizer = ""
-    attendees = []
-    # link = ""
-    # source = ""
-    # attachments = []
-    keyword = ""
-    # relevant_emails = []
-
     def __init__(self, event):
+        self.summary = ''
+        self.start = "" # what format is time? UTC
+        self.end = ""
+        self.location = "" # (address)
+        self.description = ""
+        self.creator = ""
+        # self.organizer = ""
+        self.attendees = []
+        # self.link = ""
+        # self.source = ""
+        # self.attachments = []
+        self.keyword = ""
+        # self.relevant_emails = []
 
         event_start = event['start']
         event_end = event['end']
@@ -357,7 +356,7 @@ class Event:
             for x in event['attendees']:
                 if 'displayName' in x:
                     self.attendees.append(x['displayName'].encode('utf-8'))
-
+                    
 
     def __repr__(self, type='day'):
         out_str = '{} at {}\n' #'start: {}\nend: {}\n'
