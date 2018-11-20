@@ -140,31 +140,42 @@ class Calendar:
         return events_processed
 
 
-    def getEventsAtTime(self, time):
-        print('getEventsAtTime', time)
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
+    def getEventsAtTime(time):
+        time_zone = pytz.timezone('America/Chicago')
+        date = datetime.datetime.now().date()
+        if ":" in time:
+            minute = int(time.split(":")[1])
+            hour = int(time.split(":")[0])
+        else:
+            minute = 0
+            hour = int(time)
+        time = datetime.time(hour, minute)
+        date_time = datetime.datetime.combine(date, time)
+        date_time = time_zone.localize(date_time)
+        utc_date_time = date_time.astimezone(pytz.utc)
+        date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('config/credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
 
-        now = now.isoformat() + 'Z'
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
-        events_result = self.service.events().list(
-            calendarId='primary',
-            timeMin=now,
-            timeMax=end_of_day,
-            # maxResults=self.maxResults,
-            singleEvents=True,
-            orderBy='startTime'
-        ).execute()
+        print('Getting today\'s events')
+        events_result = service.events().list(calendarId='primary', timeMin=now, timeMax = endOfDay,
+                                            singleEvents=True,
+                                            orderBy='startTime').execute()
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
             print('No upcoming events found.')
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start)
-            if time == start:
+            if date_time == start:
                 resultEvents.append(event)
         events_processed = []
         for event in resultEvents:

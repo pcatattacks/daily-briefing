@@ -228,7 +228,7 @@ class DailyBriefing:
                     if "am" in time:
                         time = time.split("am")[0]
                     else:
-                        time = time.split("pm")[0]
+                        time = time.split("pm")[0] + 12
                     new_events = self.cal.getEventsAtTime(time)
                     new_events_flag = 1
 

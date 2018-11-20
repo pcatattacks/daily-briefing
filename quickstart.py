@@ -3,7 +3,7 @@ import datetime
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
-
+import pytz
 # If modifying these scopes, delete the file token.json.
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 
@@ -13,13 +13,13 @@ def main():
     """
 
 
-    eventIsConfirmed("Andre")
+    getEventsAtTime("17:30")
 
 def getEventsWithAttendees(attendees):
     store = file.Storage('token.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+        flow = client.flow_from_clientsecrets('config/credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
     service = build('calendar', 'v3', http=creds.authorize(Http()))
 
@@ -47,10 +47,23 @@ def getEventsWithAttendees(attendees):
 
 
 def getEventsAtTime(time):
+    time_zone = pytz.timezone('America/Chicago')
+    date = datetime.datetime.now().date()
+    if ":" in time:
+        minute = int(time.split(":")[1])
+        hour = int(time.split(":")[0])
+    else:
+        minute = 0
+        hour = int(time)
+    time = datetime.time(hour, minute)
+    date_time = datetime.datetime.combine(date, time)
+    date_time = time_zone.localize(date_time)
+    utc_date_time = date_time.astimezone(pytz.utc)
+    date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
     store = file.Storage('token.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+        flow = client.flow_from_clientsecrets('config/credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
     service = build('calendar', 'v3', http=creds.authorize(Http()))
 
@@ -68,8 +81,7 @@ def getEventsAtTime(time):
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start)
-        if time == start:
+        if date_time == start:
             resultEvents.append(event)
     for event in resultEvents:
         print(event['summary']);
