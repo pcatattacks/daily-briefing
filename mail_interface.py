@@ -35,6 +35,8 @@ class Mail:
         self.user = user
         self.maxResults = maxResults
 
+    def get_user_profile(self):
+        return self.service.users().getProfile(userId = self.user_id).execute()
 
     ''' API call GET message matching id, then parse it into string represenation '''
     def get_message_by_id(self, msg_id):
@@ -145,7 +147,7 @@ class Mail:
 '''
 class Message:
 
-    
+
     ''' Parse gmail api's returned message into object we an easily work with '''
     def __init__(self, message):
         self.sender = ""
@@ -157,7 +159,7 @@ class Message:
         self.thread = None
         self.labels = []
         self.important = False
-        
+
         self.id = message['id']
 
         ''' Get labels, e.g. ['CHAT', 'IMPORTANT', 'CATEGORY_PERSONAL', 'INBOX'] '''

@@ -71,9 +71,6 @@ class DailyBriefing:
     ''' maxResults limits the number of items returned by api call '''
     maxResults = 5
 
-    ''' User's have configurations like name, school, timezone, to help us process information'''
-    user = user_dict["Andre"]
-
     ''' Initiate authorized service for gmail API with specified account '''
     def __init__(self):
         store = file.Storage('config/token.json')
@@ -86,9 +83,16 @@ class DailyBriefing:
         self.mail_service = build('gmail', 'v1', http=creds.authorize(Http()))
         self.cal_service = build('calendar', 'v3', http=creds.authorize(Http()))
 
+        ''' create our little handmade user profile '''
+        self.user = User("Andre", "email", "Northwestern", "-6:00")
+
         ''' Create a Mail & Calendar object '''
         self.mail = Mail(self.mail_service, self.user_id, self.maxResults, self.user)
         self.cal = Calendar(self.cal_service, self.user_id, self.maxResults, self.user)
+
+        ''' Get user's email from google API'''
+        profile = self.mail.get_user_profile()
+        self.user.email = profile['emailAddress']
 
     def test(self):
 
@@ -282,7 +286,7 @@ class DailyBriefing:
                     event.attendees.remove(self.user.name)
                 else:
                     ''' Linkedin for attendees '''
-                    attendee += " ({})".format(get_job_title_from_linked_in(attendee))
+                    attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
             if event.creator == self.user.name:
                 event.creator = "you"
 
