@@ -37,6 +37,9 @@ def prepare_list_of_events_to_brief(events):
         ''' Say which number event in the day this is '''
         event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
         event.lines = event_str.split("\n")
+        for line in event.lines:
+            if not line:
+                event.lines.remove(line)
         event.filenames = []
         for i, line in enumerate(event.lines):
             event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
@@ -54,7 +57,7 @@ def speak(text, title):
 def create_file_to_speak(text, title, slow=False):
 
     if not text or not title:
-        return "WHO YOU GONNA CALL? GHOSTBUSTERS"
+        return "Error: No text or title given."
 
     mp3_filename = title + ".mp3"
 
@@ -72,6 +75,7 @@ def mpg321_mp3_call_quiet(filename):
 def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
 
     ''' Print the text to accompany speech '''
+    # print(mp3_filename)
     print(text)
 
     ''' Load and playlatest daily_briefing mp3 file'''

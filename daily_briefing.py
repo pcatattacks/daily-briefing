@@ -94,6 +94,7 @@ class DailyBriefing:
         profile = self.mail.get_user_profile()
         self.user.email = profile['emailAddress']
 
+
     def test(self):
 
         print("\n\nTESTING DAILY BRIEFING INTERFACE\n\n")
@@ -184,6 +185,7 @@ class DailyBriefing:
 
         return user_in
 
+
     def get_job_title_from_linked_in(self, name):
         linkedin_profiles = get_linkedin_profiles_by_query(name)
         # speak(linkedin_profiles, "linkedin_status_0")
@@ -273,9 +275,8 @@ class DailyBriefing:
         else:
             speak("sorry, I don't know what to do for {}".format(user_in), "response_0")
 
-
-
         return new_events_flag, new_events, briefing_subject
+
 
     def preprocess_list_of_events(self, events):
         ''' preprocess new events before converting to spoken word '''
@@ -320,7 +321,7 @@ class DailyBriefing:
 
         ''' At start-up, wait for the user to give a commmand
             the default command should be to list the events for today '''
-        speak("Hello, {}!".format(repr(self.user).split(",")[0].split()[0]), "intro_0")
+        speak("Hello, {}!".format(self.user.name.split()[0]), "intro_0")
 
         ''' Wait indefinitely for user input '''
         user_in = self.listen_for_user_input();
