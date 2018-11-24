@@ -97,52 +97,52 @@ class DailyBriefing:
 
     def test(self):
 
-        print("\n\nTESTING DAILY BRIEFING INTERFACE\n\n")
+        speak("\n\nTESTING DAILY BRIEFING INTERFACE\n\n", "test_0")
 
         # print(''' Example usage of linkedin feature. ''')
         # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
 
-        print(''' Next 10 events on the Calendar ''')
+        speak(''' Next 10 events on the Calendar ''', "test_0")
         events = self.cal.get_next_ten_events()
         for i, event in enumerate(events):
-            print(repr(event))
+            speak(repr(event), "test_0")
 
-        print(''' Example of text to speech ''')
-        speak(text='''Good morning. Would you like to go over your agenda for
-        today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
-        Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
-        the possibility of a godless universe. At noon you have lunch with the General Secretary of the
-        United Nations. That is all of you scheduled events for the day.''', title="long_read")
+        # print(''' Example of text to speech ''')
+        # speak(text='''Good morning. Would you like to go over your agenda for
+        # today? The weather outside is 70 degrees and sunny. you have a meeting with Dwayne The Rock
+        # Johnson this morning at 6 A.M. Followed by a 2 hour lecture on the nature of space-time And
+        # the possibility of a godless universe. At noon you have lunch with the General Secretary of the
+        # United Nations. That is all of you scheduled events for the day.''', title="long_read")
 
 
 
-        print("get_next_ten_events")
+        speak("get_next_ten_events", "test_0")
         events = self.cal.get_next_ten_events()
-        for event in events: print(repr(event))
+        for event in events: speak(repr(event), "test_1")
 
         print("ListMessagesMatchingQuery meeting ")
         messages = self.mail.ListMessagesMatchingQuery('meeting')
         for m in messages:
-            print(repr(m))
+            speak(repr(m), "test_2")
 
 
-        print("ListMessagesMatchingQuery photos")
+        speak("ListMessagesMatchingQuery photos", "test_3")
         msgs = self.mail.ListMessagesMatchingQuery("photos")
         for m in msgs:
-            print(m)
+            speak(m, "test_4")
 
-        print("Listing labels used by this gmail account!")
+        speak("Listing labels used by this gmail account!", "test_5")
         for label in self.mail.get_labels():
-            print(label)
+            speak(label, "test_6")
 
 
-        print('''List messages that match query''')
+        speak('''List messages that match query''', "test_7")
         query_terms = ['hike', 'meet', 'see you']
 
         for query in query_terms:
-            print("\nterm \""+ query +"\" ...\n\n" )
+            speak("\nterm \""+ query +"\" ...\n\n" , "test_8")
             for msg in self.mail.ListMessagesMatchingQuery(query):
-                print(msg)
+                speak(msg, "test_9")
 
 
         '''
@@ -381,7 +381,9 @@ def main():
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing()
 
-    ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
+    ''' Test run api calls without dealing with the
+    daily_briefing.converse() protocol '''
+
     # daily_briefing.test()
 
     daily_briefing.converse()
