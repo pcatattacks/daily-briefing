@@ -218,9 +218,9 @@ class DailyBriefing:
             ''' the default is get_next_ten_events '''
             speak("Ok, preparing today's events...", "daily_briefing_response_0")
             # events_type = 'day'
-            new_events = self.cal.get_next_ten_events()
+            new_events = self.cal.get_todays_events()
             new_events_flag = 1
-            briefing_subject = "Here are your next ten events"
+            briefing_subject = "Here are today's events"
 
         elif "events at " in user_in:
             ''' user input e.g.:  what are my events at tech? '''
@@ -234,7 +234,23 @@ class DailyBriefing:
             new_events = self.cal.getEventsWithAttendees(person)
             new_events_flag = 1
             briefing_subject = "Here are events with {}".format(person)
-
+        elif "evening" in user_in:
+            new_events = self.cal.getEventsInRange("18", "23:59")
+            new_events_flag = 1
+            briefing_subject = "Here are events in the evening"
+        elif "afternoon" in user_in:
+            new_events = self.cal.getEventsInRange("12:01","17:59")
+            new_events_flag = 1
+            briefing_subject = "Here are the events in the afternoon"
+        elif "morning" in user_in:
+            new_events = self.cal.getEventsInRange("8","12")
+            new_events_flag = 1
+            briefing_subject = "Here are events in the morning"
+        elif "events related to" in user_in:
+            keyword = user_in.split("events related to ")[1].rstrip()
+            new_events = self.cal.getEventsWithKeywordsInDescription(keyword)
+            new_events_flag = 1
+            briefing_subject = "Here are events related to {}".format(keyword)
         elif any(word in user_in for word in ["am", "pm"]):
             ''' user input e.g.: what is my 10AM? '''
             words = user_in.split()

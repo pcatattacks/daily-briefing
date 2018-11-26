@@ -7,8 +7,8 @@
 # Modules
 from datetime import *
 from apiclient import errors
-
-
+import pytz
+import datetime
 ''' Helper Functions '''
 ''' Convert timestamps into human readable format
 
@@ -18,9 +18,9 @@ from apiclient import errors
 '''
 def cal_datetime_to_readable(datetime_in, date_format):
     if date_format == 'dateTime':
-        s = datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
+        s = datetime.datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
     elif date_format == 'date':
-        s = datetime.strptime(datetime_in, "%Y-%m-%d")
+        s = datetime.datetime.strptime(datetime_in, "%Y-%m-%d")
 
     ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
 
@@ -35,7 +35,7 @@ def cal_datetime_to_readable(datetime_in, date_format):
 '''
 class Calendar:
 
-    now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+    now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
     end_of_day = now + timedelta(days=1)
     end_of_day = (now + timedelta(hours=24)).isoformat() + 'Z'
 
@@ -78,6 +78,48 @@ class Calendar:
         return events_processed
 
     ''' Reads out events of the Day '''
+
+    def getEventsInRange(self, timeStart, timeEnd):
+        time_zone = pytz.timezone('America/Chicago')
+        date = datetime.datetime.now().date()
+        if ":" in timeStart:
+            minute = int(timeStart.split(":")[1])
+            hour = int(timeStart.split(":")[0])
+        else:
+            minute = 0
+            hour = int(timeStart)
+        
+        if ":" in timeEnd:
+            minuteEnd = int(timeEnd.split(":")[1])
+            hourEnd = int(timeEnd.split(":")[0])
+        else:
+            minuteEnd = 0
+            hourEnd = int(timeEnd)
+        timeStartF = datetime.time(hour, minute)
+        timeEndF = datetime.time(hourEnd, minuteEnd)
+        date_time_end = datetime.datetime.combine(date, timeEndF)
+        date_time = datetime.datetime.combine(date, timeStartF)
+        date_time_end = time_zone.localize(date_time_end)
+        date_time = time_zone.localize(date_time)
+        date_time_end = date_time_end.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+        date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+
+        # Call the Calendar API
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+
+        print('Getting today\'s events')
+        events_result = self.service.events().list(calendarId='primary', timeMin=date_time, timeMax = date_time_end,
+                                            singleEvents=True,
+                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        events_processed = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            events_processed.append(Event(event))
+        return events_processed
+
     def get_todays_events(self):
         # Call the Calendar API
         now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
