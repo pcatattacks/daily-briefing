@@ -11,6 +11,9 @@ import json
 
 from user_profile import *
 
+import sys
+
+
 '''
     This seems to avoid encoding errors, but notice that there are
     ascii codes in emails that are still not being encoded
@@ -72,11 +75,18 @@ class DailyBriefing:
     maxResults = 5
 
     ''' Initiate authorized service for gmail API with specified account '''
-    def __init__(self):
-        store = file.Storage('demo_config/token.json')
+    def __init__(self, demo=False):
+
+        token_path = 'config/token.json'
+        credentials_path = 'config/credentials.json'
+        if demo:
+            token_path = 'demo_' + token_path
+            credentials_path = 'demo_' + credentials_path
+
+        store = file.Storage(token_path)
         creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('demo_config/credentials.json', self.SCOPES)
+            flow = client.flow_from_clientsecrets(credentials_path, self.SCOPES)
             creds = tools.run_flow(flow, store)
 
         ''' Authenticate api services to Google Mail and Calendar '''
@@ -394,14 +404,23 @@ class DailyBriefing:
 
 ''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
 def main():
+
+    ''' Handle system arguments '''
+    print("This is the name of the script: ", sys.argv[0])
+    num_args = len(sys.argv)
+    print("Number of arguments: ", num_args)
+    print("The arguments are: " , str(sys.argv))
+
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
-    daily_briefing = DailyBriefing()
+    if num_args > 1:
+        daily_briefing = DailyBriefing(demo=True)
+    else:
+        daily_briefing = DailyBriefing(demo=False)
 
-    ''' Test run api calls without dealing with the
-    daily_briefing.converse() protocol '''
-
+    ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
     # daily_briefing.test()
 
+    ''' Interactive Conversation with Daily Briefing Agent '''
     daily_briefing.converse()
 
 if __name__ == '__main__':
