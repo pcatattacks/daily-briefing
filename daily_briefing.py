@@ -73,10 +73,10 @@ class DailyBriefing:
 
     ''' Initiate authorized service for gmail API with specified account '''
     def __init__(self):
-        store = file.Storage('config/token.json')
+        store = file.Storage('demo_config/token.json')
         creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('config/credentials.json', self.SCOPES)
+            flow = client.flow_from_clientsecrets('demo_config/credentials.json', self.SCOPES)
             creds = tools.run_flow(flow, store)
 
         ''' Authenticate api services to Google Mail and Calendar '''
@@ -340,7 +340,7 @@ class DailyBriefing:
         speak("Hello, {}!".format(self.user.name.split()[0]), "intro_0")
 
         ''' Wait indefinitely for user input '''
-        user_in = self.listen_for_user_input();
+        user_in = self.listen_for_user_input()
 
         ''' the big loop that runs the show '''
         while True:
