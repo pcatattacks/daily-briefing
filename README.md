@@ -12,6 +12,8 @@ You need to authorize the google api to have access to your calendar and mail ac
 
 You'll have to download a file called `credentials.json`. Put it in the `./config` directory of this project (just to keep things tidy). And put the `token.json` in the that `./config` folder.
 
+There exists a folder called `demo_config/` which has the credentials and token for Coby's test google account
+
 4. Create a file `config/__init__.py`. Leave it empty.
 
 5. Create a file `config/search_credentials.py`. Add to this file:
