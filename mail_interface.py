@@ -9,21 +9,12 @@
 # Modules
 import datetime
 from apiclient import errors
-
-
-'''
-    Gmail message timestamp conversion to human readable date
-    Convert gmail's internalDate long to a datetime str
-'''
-def internalDate_to_timestamp(internalDate):
-    s = long(internalDate) / 1000.0
-    # return datetime.datetime.fromtimestamp(s).strftime('%Y-%m-%d %H:%M:%S')
-    return datetime.datetime.fromtimestamp(s).strftime('%A %B %d, %Y %H:%M')
-
+import time_interface
 
 '''
     The Mail Class:
-    Makes gmail api calls for messages (emails, threads, and chats) via
+    Makes gmail api calls for messages (emails, threads, and chats)
+
     query matching and by message labels.
 '''
 class Mail:

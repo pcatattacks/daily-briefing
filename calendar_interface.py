@@ -9,23 +9,7 @@ from datetime import *
 from apiclient import errors
 import pytz
 import datetime
-''' Helper Functions '''
-''' Convert timestamps into human readable format
-
-    e.g.    Start time: 2014-06-03 09:00 AM
-            End time: 2014-06-03 10:00 AM
-
-'''
-def cal_datetime_to_readable(datetime_in, date_format):
-    if date_format == 'dateTime':
-        s = datetime.datetime.strptime(datetime_in,"%Y-%m-%dT%H:%M:%S-06:00")
-    elif date_format == 'date':
-        s = datetime.datetime.strptime(datetime_in, "%Y-%m-%d")
-
-    ss = "{} {}".format(s.date(),s.time().strftime( "%I:%M %p" ))
-
-    return s
-
+import time_interface
 
 '''
     The Calendar Class
@@ -34,10 +18,6 @@ def cal_datetime_to_readable(datetime_in, date_format):
 
 '''
 class Calendar:
-
-    now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-    end_of_day = now + timedelta(days=1)
-    end_of_day = (now + timedelta(hours=24)).isoformat() + 'Z'
 
     events = {
         "daily": [], # List of events
@@ -56,7 +36,8 @@ class Calendar:
     def get_next_ten_events(self):
 
         # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        # now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        now = time_interface.datetime_now_fake
         # end_of_day = now + timedelta()
         # print('Getting the upcoming 10 events')
 
@@ -105,7 +86,8 @@ class Calendar:
         date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
 
         # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        # now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        now = time_interface.datetime_now_fake
         endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
 
         print('Getting today\'s events')
@@ -122,10 +104,13 @@ class Calendar:
 
     def get_todays_events(self):
         # Call the Calendar API
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
+        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = time_interface.datetime_now_fake
+        # end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
+        end_of_day = now + timedelta(days=1)
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -153,10 +138,12 @@ class Calendar:
 
     def getEventsWithAttendees(self, attendee):
         print('getEventsWithAttendees ', attendee)
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        # now = time_interface.datetime_now_fake
         end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -187,10 +174,11 @@ class Calendar:
 
     def getEventsAtTime(self, time):
         print('getEventsAtTime', time)
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
+        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        # end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -220,7 +208,8 @@ class Calendar:
         now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -249,10 +238,11 @@ class Calendar:
 
 
         print('getEventsWithKeywordsInTitle, ', keywords)
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
+        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = time_interface.datetime_now_fake
+        # end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -285,7 +275,8 @@ class Calendar:
         now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -317,7 +308,8 @@ class Calendar:
         now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
-        now = now.isoformat() + 'Z'
+        # now = now.isoformat() + 'Z'
+        now = time_interface.datetime_now_fake
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
