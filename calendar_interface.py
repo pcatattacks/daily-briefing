@@ -56,7 +56,7 @@ class Calendar:
     def get_next_ten_events(self):
 
         # Call the Calendar API
-        now = datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
         # end_of_day = now + timedelta()
         # print('Getting the upcoming 10 events')
 
@@ -88,7 +88,7 @@ class Calendar:
         else:
             minute = 0
             hour = int(timeStart)
-        
+
         if ":" in timeEnd:
             minuteEnd = int(timeEnd.split(":")[1])
             hourEnd = int(timeEnd.split(":")[0])
@@ -122,7 +122,7 @@ class Calendar:
 
     def get_todays_events(self):
         # Call the Calendar API
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -153,7 +153,7 @@ class Calendar:
 
     def getEventsWithAttendees(self, attendee):
         print('getEventsWithAttendees ', attendee)
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -187,7 +187,7 @@ class Calendar:
 
     def getEventsAtTime(self, time):
         print('getEventsAtTime', time)
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -217,7 +217,7 @@ class Calendar:
         return events_processed
 
     def getEventsAtLocation(self, location):
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -249,7 +249,7 @@ class Calendar:
 
 
         print('getEventsWithKeywordsInTitle, ', keywords)
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -282,7 +282,7 @@ class Calendar:
 
 
         print('getEventsWithKeywordsInDescription', keywords)
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -314,7 +314,7 @@ class Calendar:
 
 
         print('eventIsConfirmed,' + eventTitle + "?")
-        now = datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
+        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
         end_of_day = now + timedelta(days=1)
 
         now = now.isoformat() + 'Z'
@@ -398,7 +398,7 @@ class Event:
             for x in event['attendees']:
                 if 'displayName' in x:
                     self.attendees.append(x['displayName'].encode('utf-8'))
-                    
+
 
     def __repr__(self, type='day'):
         out_str = '{} at {}\n' #'start: {}\nend: {}\n'

@@ -54,7 +54,7 @@ def getEventsInRange(timeStart, timeEnd):
     else:
         minute = 0
         hour = int(timeStart)
-    
+
     if ":" in timeEnd:
         minuteEnd = int(timeEnd.split(":")[1])
         hourEnd = int(timeEnd.split(":")[0])
