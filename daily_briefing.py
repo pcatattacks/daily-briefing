@@ -182,7 +182,7 @@ class DailyBriefing:
     # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
     def listen_for_user_input(self, timeout=120):
 
-        print("\n\n>>>")
+        # print("\n\n>>>")
 
         user_in = ""
         ''' Wait indefinitely for user input '''
@@ -405,15 +405,13 @@ class DailyBriefing:
 ''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
 def main():
 
-    ''' Handle system arguments '''
-    print("This is the name of the script: ", sys.argv[0])
-    num_args = len(sys.argv)
-    print("Number of arguments: ", num_args)
-    print("The arguments are: " , str(sys.argv))
-
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
+
+    num_args = len(sys.argv)
+
     if num_args > 1:
-        daily_briefing = DailyBriefing(demo=True)
+        if sys.argv[1] == 'demo':
+            daily_briefing = DailyBriefing(demo=True)
     else:
         daily_briefing = DailyBriefing(demo=False)
 

@@ -105,12 +105,13 @@ class Calendar:
     def get_todays_events(self):
         # Call the Calendar API
         # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        now = time_interface.datetime_now_fake
+        # now = time_interface.datetime_now_fake
         # end_of_day = now + timedelta(days=1)
 
         # now = now.isoformat() + 'Z'
         now = time_interface.datetime_now_fake
         end_of_day = now + timedelta(days=1)
+        now = now.isoformat() + "Z"
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -118,7 +119,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -178,7 +178,7 @@ class Calendar:
         # end_of_day = now + timedelta(days=1)
 
         # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
+        now = time_interface.datetime_now_fake.isoformat() + "Z-06:00"
         end_of_day = end_of_day.isoformat() + 'Z'
         # print('Getting the upcoming 10 events')
 
@@ -366,13 +366,13 @@ class Event:
         event_end = event['end']
 
         if 'dateTime' in event_start:
-            self.start = cal_datetime_to_readable(event_start['dateTime'], 'dateTime')
+            self.start = time_interface.string_to_datetime(event_start['dateTime'], 'dateTime')
         elif 'date' in event_start:
-            self.start = cal_datetime_to_readable(event_start['date'], 'date')
+            self.start = time_interface.string_to_datetime(event_start['date'], 'date')
         if 'dateTime' in event_end:
-            self.start = cal_datetime_to_readable(event_end['dateTime'], 'dateTime')
+            self.start = time_interface.string_to_datetime(event_end['dateTime'], 'dateTime')
         elif 'date' in event_end:
-            self.start = cal_datetime_to_readable(event_end['date'], 'date')
+            self.start = time_interface.string_to_datetime(event_end['date'], 'date')
         self.id = event['id']
 
         if 'summary' in event:
