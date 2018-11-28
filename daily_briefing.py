@@ -279,9 +279,7 @@ class DailyBriefing:
         elif "last event" in user_in:
             ''' get more information about event from additional sources '''
             speak("getting more info on this event", "more_info_status")
-            # getmoreinfofunc
-
-        # ''' Parse requests for more information on something '''
+        #''' Parse requests for more information on something '''
         elif "tell me more about" in user_in:
             words = user_in.split()
             index = words.index("about")
@@ -291,6 +289,7 @@ class DailyBriefing:
             elif event_counter >= 0: # if we have events
                 pass # TODO
             pass
+
         elif "who is" in user_in:
             words = user_in.split()
             index = words.index("is")
@@ -300,7 +299,19 @@ class DailyBriefing:
             elif event_counter >= 0: # if we have events
                 pass # TODO
             pass
-        # elif "wait" in user_in:
+        elif "wait" in user_in:
+            user_in_2 = self.listen_for_user_input()
+
+            new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in_2)
+            user_in_2 = ""
+
+            if new_events_flag:
+                new_events = self.preprocess_list_of_events(new_events)
+                prepared_events = prepare_list_of_events_to_brief(new_events)
+                new_events_flag = 0 # reset flag
+
+        elif "resume" in user_in:
+            pass
         else:
             speak("sorry, I don't know what to do for {}".format(user_in), "response_0")
 
