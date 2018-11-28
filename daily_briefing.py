@@ -96,9 +96,12 @@ class DailyBriefing:
         ''' create our little handmade user profile '''
         self.user = User("Andre", "email", "Northwestern", "-6:00")
 
+        ''' Create Time Service '''
+        self.time_service = time_interface.TimeService(demo)
+
         ''' Create a Mail & Calendar object '''
-        self.mail = Mail(self.mail_service, self.user_id, self.maxResults, self.user)
-        self.cal = Calendar(self.cal_service, self.user_id, self.maxResults, self.user)
+        self.mail = Mail(self.mail_service, self.user_id, self.maxResults, self.user, self.time_service)
+        self.cal = Calendar(self.cal_service, self.user_id, self.maxResults, self.user, self.time_service)
 
         ''' Get user's email from google API'''
         profile = self.mail.get_user_profile()

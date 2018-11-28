@@ -5,11 +5,10 @@
 # object for easier use by our DailyBriefing class.
 
 # Modules
-from datetime import *
 from apiclient import errors
 import pytz
-import datetime
 import time_interface
+import datetime
 
 '''
     The Calendar Class
@@ -19,27 +18,21 @@ import time_interface
 '''
 class Calendar:
 
-    events = {
-        "daily": [], # List of events
-        # "weekly": [], # list of days
-        # "monthly": [] # list of weeks
-        }
 
     ''' Initiate authorized service for gmail API with specified account '''
-    def __init__(self, service, user_id, maxResults, user):
+    def __init__(self, service, user_id, maxResults, user, time_service):
         self.service = service
         self.user_id = user_id
         self.user = user
         self.maxResults = maxResults
+        self.time_service = time_service
+
 
     ''' Get the next ten upcoming events'''
     def get_next_ten_events(self):
-
-        # Call the Calendar API
-        # now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        now = time_interface.datetime_now_fake
-        # end_of_day = now + timedelta()
         # print('Getting the upcoming 10 events')
+
+        now = self.time_service.get_time_now()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -58,11 +51,12 @@ class Calendar:
 
         return events_processed
 
-    ''' Reads out events of the Day '''
 
     def getEventsInRange(self, timeStart, timeEnd):
         time_zone = pytz.timezone('America/Chicago')
-        date = datetime.datetime.now().date()
+        date = self.time_service.get_time_now_and_eod()[0].date()
+
+        ''' Parse given start and end times to generate datetime objects '''
         if ":" in timeStart:
             minute = int(timeStart.split(":")[1])
             hour = int(timeStart.split(":")[0])
@@ -76,24 +70,30 @@ class Calendar:
         else:
             minuteEnd = 0
             hourEnd = int(timeEnd)
+
         timeStartF = datetime.time(hour, minute)
         timeEndF = datetime.time(hourEnd, minuteEnd)
+
+        ''' Combine start and end times with today's date '''
         date_time_end = datetime.datetime.combine(date, timeEndF)
         date_time = datetime.datetime.combine(date, timeStartF)
+
+        ''' Time-zone localization '''
         date_time_end = time_zone.localize(date_time_end)
         date_time = time_zone.localize(date_time)
+
+        ''' String from time '''
         date_time_end = date_time_end.strftime('%Y-%m-%dT%H:%M:%S-06:00')
         date_time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
 
-        # Call the Calendar API
-        # now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-        now = time_interface.datetime_now_fake
-        endOfDay = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat() + 'Z'
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=date_time,
+            timeMax = date_time_end,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
 
-        print('Getting today\'s events')
-        events_result = self.service.events().list(calendarId='primary', timeMin=date_time, timeMax = date_time_end,
-                                            singleEvents=True,
-                                            orderBy='startTime').execute()
         events = events_result.get('items', [])
         events_processed = []
         if not events:
@@ -102,18 +102,13 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
-    def get_todays_events(self):
-        # Call the Calendar API
-        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        # now = time_interface.datetime_now_fake
-        # end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
-        end_of_day = now + timedelta(days=1)
-        now = now.isoformat() + "Z"
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+    ''' Reads out events of the Day '''
+    def get_todays_events(self):
+
+        print('get_todays_events')
+
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -136,16 +131,12 @@ class Calendar:
     def tell_me_more_about_event(self, keywords_to_match, part_of_event):
         return 0
 
-    def getEventsWithAttendees(self, attendee):
-        print('getEventsWithAttendees ', attendee)
-        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        # now = time_interface.datetime_now_fake
-        end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+    def getEventsWithAttendees(self, attendee):
+
+        print('getEventsWithAttendees ', attendee)
+
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -155,6 +146,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -173,14 +165,10 @@ class Calendar:
 
 
     def getEventsAtTime(self, time):
-        print('getEventsAtTime', time)
-        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        # end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake.isoformat() + "Z-06:00"
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+        print('getEventsAtTime', time)
+
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -190,6 +178,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -204,14 +193,12 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
-    def getEventsAtLocation(self, location):
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+    def getEventsAtLocation(self, location):
+
+        print("getEventsAtLocation", location)
+
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -221,6 +208,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -236,15 +224,9 @@ class Calendar:
 
     def getEventsWithKeywordsInTitle(self, keywords):
 
-
         print('getEventsWithKeywordsInTitle, ', keywords)
-        # now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        now = time_interface.datetime_now_fake
-        # end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -254,6 +236,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -270,15 +253,9 @@ class Calendar:
 
     def getEventsWithKeywordsInDescription(self, keywords):
 
-
         print('getEventsWithKeywordsInDescription', keywords)
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -288,6 +265,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         resultEvents = []
         if not events:
@@ -301,17 +279,12 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
+
     def eventIsConfirmed(self, eventTitle):
 
-
         print('eventIsConfirmed,' + eventTitle + "?")
-        now = datetime.datetime.utcnow() #.isoformat() + 'Z' # # 'Z' indicates UTC time
-        end_of_day = now + timedelta(days=1)
 
-        # now = now.isoformat() + 'Z'
-        now = time_interface.datetime_now_fake
-        end_of_day = end_of_day.isoformat() + 'Z'
-        # print('Getting the upcoming 10 events')
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
@@ -321,6 +294,7 @@ class Calendar:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
+
         events = events_result.get('items', [])
         if not events:
             print('No upcoming events found.')
@@ -345,7 +319,7 @@ class Calendar:
 
 '''
 
-class Event:
+class Event():
 
     def __init__(self, event):
         self.summary = ''

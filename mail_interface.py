@@ -7,7 +7,6 @@
 
 
 # Modules
-import datetime
 from apiclient import errors
 import time_interface
 
@@ -20,11 +19,13 @@ import time_interface
 class Mail:
 
     ''' Get authorized service for gmail API with specified account from DailyBriefing.py'''
-    def __init__(self, service, user_id, maxResults, user):
+    def __init__(self, service, user_id, maxResults, user, time_service):
         self.service = service
         self.user_id = user_id
         self.user = user
         self.maxResults = maxResults
+        self.time_service = time_service
+
 
     def get_user_profile(self):
         return self.service.users().getProfile(userId = self.user_id).execute()
