@@ -9,6 +9,7 @@ from apiclient import errors
 import pytz
 import time_interface
 import datetime
+import json  # debug
 
 '''
     The Calendar Class
@@ -26,7 +27,8 @@ class Calendar:
         self.user = user
         self.maxResults = maxResults
         self.time_service = time_service
-
+        self.contacts = {} # key: value of name: (email, [event])
+        self.locations = {} # key: value of location: [event]
 
     ''' Get the next ten upcoming events'''
     def get_next_ten_events(self):
@@ -119,11 +121,36 @@ class Calendar:
         ).execute()
 
         events = events_result.get('items', [])
+        # print (json.dumps(events, indent=2))  # debug
         events_processed = []
         if not events:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
+            if "attendees" in event:
+                attendees = event["attendees"]
+                for attendee in attendees:
+                    email = attendee["email"].lower()
+                    try:
+                        name = attendee["displayName"].lower()
+                    except KeyError: # if no display name, using email username
+                        name = email.split("@")[0].lower()
+                    if name in self.contacts:
+                        corresponding_events = self.contacts[name][1]
+                        if event not in corresponding_events:
+                            corresponding_events.append(event)
+                    else:
+                        self.contacts[name] = (email, [event])
+            
+            if "location" in event:
+                location = event["location"].lower()
+                if location in self.locations:
+                    corresponding_events = self.locations[location]
+                    if event not in corresponding_events:
+                        corresponding_events.add(event)
+                else:
+                    self.locations[location] = [event]
+
 
         return events_processed
 

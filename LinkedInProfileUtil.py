@@ -40,13 +40,15 @@ def get_linkedin_profiles_by_query(query):
         "q": query
     }
     r = req.get(REQUEST_URL, params=params)
+    # print(r)
     results = r.json()
     profiles = None
     try:
         profiles = [ {"profile_url":item["formattedUrl"], "hcard": item["pagemap"]["hcard"][0] } for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
     except:
-        print "Something went wrong! The result of the request was:"
-        print(json.dumps(results, indent=2))
+        # print "Something went wrong! The result of the request was:"
+        # print(json.dumps(results, indent=2))
+        pass
     return profiles
 
 # This doesn't work, linkedin's gotten a lot smarter about preventing scraping.
@@ -70,5 +72,5 @@ def get_linkedin_profiles_by_query(query):
 
 # get_linkedin_profile_details(profiles[0]["profile_url"])
 
-# import json
-# print json.dumps(get_linkedin_profiles_by_query("Pranav Dhingra"), indent=2)
+# import json, sys
+# print json.dumps(get_linkedin_profiles_by_query(sys.argv[1]), indent=2)

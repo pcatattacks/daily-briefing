@@ -280,25 +280,60 @@ class DailyBriefing:
             ''' get more information about event from additional sources '''
             speak("getting more info on this event", "more_info_status")
         #''' Parse requests for more information on something '''
-        elif "tell me more about" in user_in:
+        elif "about" in user_in:
             words = user_in.split()
             index = words.index("about")
-            person_name = words[index+1:].join(" ")
-            if event_counter == -1: # if events not pulled yet
-                pass # TODO
-            elif event_counter >= 0: # if we have events
-                pass # TODO
-            pass
+            proper_noun = " ".join(words[index+1:]).lower()
+
+            print("finding information about {}...".format(proper_noun))
+            for contact_name in self.cal.contacts: # check if proper noun is a contact name
+                # checking full name and first name
+                if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
+                    email, events = self.cal.contacts[contact_name]
+                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try 
+                    if not linkedin_profiles:
+                        linkedin_profiles = get_linkedin_profiles_by_query(contact_name)
+                    if not linkedin_profiles:
+                        linkedin_profiles = get_linkedin_profiles_by_query(proper_noun)
+                    if not linkedin_profiles:
+                        print("No linkedin profiles found related to {}.".format(proper_noun))
+                    else:
+                        print(" --------------------------------------------------------------------")
+                        print("I found these profiles on linkedin related to {}:".format(proper_noun))
+                        print(json.dumps(linkedin_profiles, indent=2))
+                        print(" --------------------------------------------------------------------")
+                        # speak(, linkedin_profiles)
+
+            for location in self.cal.locations:
+                if proper_noun in location or proper_noun.split(" ")[0] in location:
+                    events = self.cal.locations[location]
+                    print("I found the following events at this location:")
+                    print(json.dumps(events, indent=2))
 
         elif "who is" in user_in:
             words = user_in.split()
             index = words.index("is")
-            person_name = words[index+1:].join(" ")
-            if event_counter == -1: # if events not pulled yet
-                pass # TODO
-            elif event_counter >= 0: # if we have events
-                pass # TODO
-            pass
+            proper_noun = " ".join(words[index+1:]).lower()
+
+            print("finding information about {}...".format(proper_noun))
+            for contact_name in self.cal.contacts: # check if proper noun is a contact name
+                # checking full name and first name
+                if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
+                    email, events = self.cal.contacts[contact_name]
+                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try 
+                    if not linkedin_profiles:
+                        linkedin_profiles = get_linkedin_profiles_by_query(contact_name)
+                    if not linkedin_profiles:
+                        linkedin_profiles = get_linkedin_profiles_by_query(proper_noun)
+                    if not linkedin_profiles:
+                        print("No linkedin profiles found related to {}.".format(proper_noun))
+                    else:
+                        print(" --------------------------------------------------------------------")
+                        print("I found these profiles on linkedin related to {}:".format(proper_noun))
+                        print(json.dumps(linkedin_profiles, indent=2))
+                        print(" --------------------------------------------------------------------")
+                        # speak(, linkedin_profiles)
+            
         elif "wait" in user_in:
             user_in_2 = self.listen_for_user_input()
 
