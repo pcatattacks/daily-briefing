@@ -108,7 +108,7 @@ class Calendar:
     ''' Reads out events of the Day '''
     def get_todays_events(self):
 
-        print('get_todays_events')
+        # print('get_todays_events')  # debug
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 

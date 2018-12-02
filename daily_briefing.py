@@ -303,12 +303,16 @@ class DailyBriefing:
                         print(json.dumps(linkedin_profiles, indent=2))
                         print(" --------------------------------------------------------------------")
                         # speak(, linkedin_profiles)
+                        # TODO - the above needs to be spoken
 
             for location in self.cal.locations:
                 if proper_noun in location or proper_noun.split(" ")[0] in location:
                     events = self.cal.locations[location]
-                    print("I found the following events at this location:")
+                    print(" ------------------------------------------------- ")
+                    print("I found the following events at {}:".format(location))
                     print(json.dumps(events, indent=2))
+                    print(" ------------------------------------------------- ")
+                    # TODO - the above needs to be spoken and formatted
 
         elif "who is" in user_in:
             words = user_in.split()
