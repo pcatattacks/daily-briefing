@@ -9,11 +9,6 @@ from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARC
 from LinkedInProfileUtil import get_linkedin_profiles_by_query
 import json
 
-from user_profile import *
-
-import sys
-
-
 '''
     This seems to avoid encoding errors, but notice that there are
     ascii codes in emails that are still not being encoded
@@ -39,6 +34,7 @@ import datetime
 from mail_interface import *
 from calendar_interface import *
 from conversation_interface import *
+from user_profile import *
 
 
 ''' The Daily Briefing Interface '''
@@ -71,18 +67,24 @@ class DailyBriefing:
     ''' The user's email address. The special value 'me' used to indicate the authenticated user. '''
     user_id = 'me'
 
-    ''' maxResults limits the number of items returned by api call '''
-    maxResults = 5
-
     ''' Initiate authorized service for gmail API with specified account '''
     def __init__(self, demo=False):
 
-        token_path = 'config/token.json'
-        credentials_path = 'config/credentials.json'
+        ''' If demo, The George McGovern Test email is used, and credentials already exist in demo_config'''
         if demo:
-            token_path = 'demo_' + token_path
-            credentials_path = 'demo_' + credentials_path
+            token_path = 'demo_config/token.json'
+            credentials_path = 'demo_config/credentials.json'
+            self.user = user_dict["George"]
 
+        else:
+            ''' Config must be set up manually, see readme. '''
+            token_path = 'config/token.json'
+            credentials_path = 'config/credentials.json'
+
+            ''' TODO create our little internal hand-made user profile automatically '''
+            self.user = user_dict["Andre"]
+
+        ''' Google API Authorization for EECS 338 Project'''
         store = file.Storage(token_path)
         creds = store.get()
         if not creds or creds.invalid:
@@ -93,15 +95,12 @@ class DailyBriefing:
         self.mail_service = build('gmail', 'v1', http=creds.authorize(Http()))
         self.cal_service = build('calendar', 'v3', http=creds.authorize(Http()))
 
-        ''' create our little handmade user profile '''
-        self.user = User("Andre", "email", "Northwestern", "-6:00")
-
         ''' Create Time Service '''
         self.time_service = time_interface.TimeService(demo)
 
         ''' Create a Mail & Calendar object '''
-        self.mail = Mail(self.mail_service, self.user_id, self.maxResults, self.user, self.time_service)
-        self.cal = Calendar(self.cal_service, self.user_id, self.maxResults, self.user, self.time_service)
+        self.mail = Mail(self.mail_service, self.user_id, self.user, self.time_service)
+        self.cal = Calendar(self.cal_service, self.user_id, self.user, self.time_service)
 
         ''' Get user's email from google API'''
         profile = self.mail.get_user_profile()
@@ -112,13 +111,29 @@ class DailyBriefing:
 
         speak("\n\nTESTING DAILY BRIEFING INTERFACE\n\n", "test_0")
 
+        # messages = self.mail.ListMessagesMatchingQuery("coffee")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("discussion")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Lunch")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Finance")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Dinner")
+        # for x in messages:
+        #     print(x)
+
         # print(''' Example usage of linkedin feature. ''')
         # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
-
-        speak(''' Next 10 events on the Calendar ''', "test_0")
-        events = self.cal.get_next_ten_events()
-        for i, event in enumerate(events):
-            speak(repr(event), "test_0")
+        #
+        # speak(''' Next 10 events on the Calendar ''', "test_0")
+        # events = self.cal.get_next_ten_events()
+        # for i, event in enumerate(events):
+        #     speak(repr(event), "test_0")
 
         # print(''' Example of text to speech ''')
         # speak(text='''Good morning. Would you like to go over your agenda for
@@ -128,21 +143,18 @@ class DailyBriefing:
         # United Nations. That is all of you scheduled events for the day.''', title="long_read")
 
 
-
-        speak("get_next_ten_events", "test_0")
-        events = self.cal.get_next_ten_events()
-        for event in events: speak(repr(event), "test_1")
-
         print("ListMessagesMatchingQuery meeting ")
         messages = self.mail.ListMessagesMatchingQuery('meeting')
-        for m in messages:
-            speak(repr(m), "test_2")
+        if messages:
+            for m in messages:
+                speak(repr(m), "test_2")
 
 
         speak("ListMessagesMatchingQuery photos", "test_3")
         msgs = self.mail.ListMessagesMatchingQuery("photos")
-        for m in msgs:
-            speak(m, "test_4")
+        if msgs:
+            for m in msgs:
+                speak(m, "test_4")
 
         speak("Listing labels used by this gmail account!", "test_5")
         for label in self.mail.get_labels():
@@ -170,44 +182,33 @@ class DailyBriefing:
             self.mail.ListMessagesWithLabels([label])
 
 
-    '''
-        Get information from email to bolster a calendar event
-        Employ semantic 'cheap' tricks!
-    '''
-    def get_information_from_email_related_to_event(self, cal_event):
-        # TODO This is the crux of the project
-        pass
-
-    # def create_calendar_event_from_email(self, email_id):
-    #     # TODO This is bonus points
-    #     pass
-
     # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
     def listen_for_user_input(self, timeout=120):
 
-        # print("\n\n>>>")
+        print("\n")
 
         user_in = ""
+
         ''' Wait indefinitely for user input '''
         r, w, e = select([sys.stdin], [], [], timeout)
 
         ''' If the user has said something, parse user input and follow their commands '''
         if sys.stdin in r:
-
-            user_in = sys.stdin.readline().lower() # make userinput all lowercase
+            user_in = sys.stdin.readline().lower()
 
         return user_in
 
 
     def get_job_title_from_linked_in(self, name):
+        job_title = "No Job Title Found"
+
         linkedin_profiles = get_linkedin_profiles_by_query(name)
         # speak(linkedin_profiles, "linkedin_status_0")
         if linkedin_profiles:
+            print(linkedin_profiles)
             hcard = linkedin_profiles[0]['hcard']
             if 'title' in hcard:
                 job_title = hcard['title']
-            else:
-                job_title = "No Job Title Found"
 
         return job_title
 
@@ -296,18 +297,18 @@ class DailyBriefing:
                 # checking full name and first name
                 if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
                     email, events = self.cal.contacts[contact_name]
-                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try 
+                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try
                     if not linkedin_profiles:
                         linkedin_profiles = get_linkedin_profiles_by_query(contact_name)
                     if not linkedin_profiles:
                         linkedin_profiles = get_linkedin_profiles_by_query(proper_noun)
                     if not linkedin_profiles:
-                        print("No linkedin profiles found related to {}.".format(proper_noun))
+                        speak("No linkedin profiles found related to {}.".format(proper_noun), "linked_in")
                     else:
-                        print(" --------------------------------------------------------------------")
-                        print("I found these profiles on linkedin related to {}:".format(proper_noun))
-                        print(json.dumps(linkedin_profiles, indent=2))
-                        print(" --------------------------------------------------------------------")
+                        speak(" --------------------------------------------------------------------", "linked_in")
+                        speak("I found these profiles on linkedin related to {}:".format(proper_noun), "linked_in")
+                        speak(json.dumps(linkedin_profiles, indent=2), "linked_in")
+                        speak(" --------------------------------------------------------------------", "linked_in")
                         # speak(, linkedin_profiles)
                         # TODO - the above needs to be spoken
 
@@ -330,7 +331,7 @@ class DailyBriefing:
                 # checking full name and first name
                 if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
                     email, events = self.cal.contacts[contact_name]
-                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try 
+                    linkedin_profiles = get_linkedin_profiles_by_query(email) # try
                     if not linkedin_profiles:
                         linkedin_profiles = get_linkedin_profiles_by_query(contact_name)
                     if not linkedin_profiles:
@@ -343,7 +344,7 @@ class DailyBriefing:
                         print(json.dumps(linkedin_profiles, indent=2))
                         print(" --------------------------------------------------------------------")
                         # speak(, linkedin_profiles)
-            
+
         elif "wait" in user_in:
             user_in_2 = self.listen_for_user_input()
 
@@ -375,9 +376,9 @@ class DailyBriefing:
                 if self.user.name == attendee:
                     event.attendees.remove(self.user.name)
 
-                else:
-                    ''' Linkedin for attendees '''
-                    attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
+                # else:
+                    # ''' Linkedin for attendees '''
+                    # attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
 
             if event.creator == self.user.name:
                 event.creator = "you"
@@ -393,7 +394,7 @@ class DailyBriefing:
                 print("getting messages matching query: ", query)
 
                 emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
-
+                print("emails_matching_query", emails_matching_query)
                 if emails_matching_query:
                     for email in emails_matching_query:
                         print(email.subject, email.snippet)
@@ -473,28 +474,38 @@ class DailyBriefing:
                 prepared_events = []
 
                 ''' We have read all the events prepared for the briefing '''
-                #speak(text="That concludes your briefing", title="conclusion")
+                speak(text="That concludes your briefing", title="conclusion")
 
 
 
 ''' main() Runs when you type `$ python daily_briefing.py` in the cmd line '''
 def main():
 
+    ''' Parse command line arguments for demo and test'''
+    use_demo_config = False
+    run_test = False
+
+    arguments = sys.argv
+    if "demo" in arguments:
+        use_demo_config = True
+    if "test" in arguments:
+        run_test = True
+
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
+    daily_briefing = DailyBriefing(demo=use_demo_config)
 
-    num_args = len(sys.argv)
+    # print(daily_briefing.mail.ListMessagesWithLabels("INBOX"))
 
-    if num_args > 1:
-        if sys.argv[1] == 'demo':
-            daily_briefing = DailyBriefing(demo=True)
+    # print(daily_briefing.get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
+    # print(daily_briefing.get_job_title_from_linked_in("PranavDhingra2019@u.northwestern.edu"))
+    # print(daily_briefing.get_job_title_from_linked_in("Jeff Bezos"))
+
+    if run_test:
+        ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
+        daily_briefing.test()
     else:
-        daily_briefing = DailyBriefing(demo=False)
-
-    ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
-    # daily_briefing.test()
-
-    ''' Interactive Conversation with Daily Briefing Agent '''
-    daily_briefing.converse()
+        ''' Interactive Conversation with Daily Briefing Agent '''
+        daily_briefing.converse()
 
 if __name__ == '__main__':
     main()
