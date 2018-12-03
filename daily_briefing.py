@@ -366,27 +366,25 @@ class DailyBriefing:
             else:
                 queries = event.keywords
 
-            for query in queries:
+            # for query in queries:
+            query = " ".join(queries)
+            emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
+            if emails_matching_query:
+                for email in emails_matching_query:
+                    if email not in event.related_emails:
+                        event.related_emails.append(email)
+            else:
+                for query in queries:
+                    emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
+                    if emails_matching_query:
+                        for email in emails_matching_query:
+                            if email not in event.related_emails:
+                                event.related_emails.append(email)
 
-                print("getting messages matching query: ", query)
 
-                emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
-                print("emails_matching_query", emails_matching_query)
-                if emails_matching_query:
-                    for email in emails_matching_query:
-                        print(email.subject, email.snippet)
-
-                # event.related_emails
 
             ''' Pull up the latest email related to this event'''
             linkedin_profiles = None
-
-            # if emails_matching_query:
-                # print(emails_matching_query)
-                # print(emails_matching_query[0].subject, emails_matching_query[0].snippet)
-                # event.related_email = "\n EMAIL RELATED TO QUERY \"" + query + "\":\n" + emails_matching_query[0].subject + "\n"
-                # speak("\nRELATED EMAIL TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n", "relevant_email_status_0")
-                # speak(repr(msgs[0]), "relevant_email")
 
         return events
 
@@ -438,7 +436,7 @@ class DailyBriefing:
                         print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
 
                         ''' Handling interruptions... '''
-                        user_in = self.listen_for_user_input(timeout=5)
+                        user_in = self.listen_for_user_input(timeout=1)
                         new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
                         user_in = ""
                         if new_events_flag:

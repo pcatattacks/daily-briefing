@@ -39,10 +39,13 @@ def prepare_list_of_events_to_brief(events):
 
         event.lines = event_str.split("\n")
 
+        ''' Attach a relevant email subject and snippet to end of event '''
         if event.related_emails:
             first_email = event.related_emails[0]
-            email_str = first_email.subject + first_email.snippet
-            event.lines.append(email_str)
+            email_strings = ["Related Email:", first_email.subject, first_email.snippet]
+            for email_str in email_strings:
+                email_str.encode('utf-8')
+            event.lines += email_strings
 
         if "" in event.lines:
             event.lines.remove("")

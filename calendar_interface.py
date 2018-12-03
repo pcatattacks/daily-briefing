@@ -358,6 +358,7 @@ class Event():
                 with_index = summary_list.index("with")
 
                 self.keywords.append(summary_list[with_index-1].encode('utf-8'))
+                self.keywords.append(summary_list[with_index+1].encode('utf-8'))
                 self.attendees.append(summary_list[with_index+1].encode('utf-8'))
 
                 if "to" in summary_list:
@@ -410,5 +411,5 @@ class Event():
             out_str += 'Attendees: {}\n'
             newList = ",".join(self.attendees)
             format_arg_list.append(newList)
-        
+
         return out_str.format(*format_arg_list)
