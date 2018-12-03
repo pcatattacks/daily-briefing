@@ -19,16 +19,16 @@ import time_interface
 class Mail:
 
     ''' Get authorized service for gmail API with specified account from DailyBriefing.py'''
-    def __init__(self, service, user_id, maxResults, user, time_service):
+    def __init__(self, service, user_id, user, time_service):
         self.service = service
         self.user_id = user_id
-        self.user = user
-        self.maxResults = maxResults
+        # self.user = user
         self.time_service = time_service
 
 
     def get_user_profile(self):
         return self.service.users().getProfile(userId = self.user_id).execute()
+
 
     ''' API call GET message matching id, then parse it into string represenation '''
     def get_message_by_id(self, msg_id):
@@ -63,7 +63,6 @@ class Mail:
         try:
             response = self.service.users().messages().list(
                 userId=self.user_id,
-                maxResults=self.maxResults,
                 q=query
             ).execute()
 
@@ -76,7 +75,6 @@ class Mail:
                 response = self.service.users().messages().list(
                     userId=self.user_id,
                     q=query,
-                    maxResults=self.maxResults,
                     pageToken=page_token
                 ).execute()
 
@@ -100,7 +98,6 @@ class Mail:
         try:
             response = self.service.users().messages().list(
                 userId=self.user_id,
-                maxResults=self.maxResults,
                 labelIds=label_ids
             ).execute()
 
@@ -115,7 +112,6 @@ class Mail:
                 page_token = response['nextPageToken']
                 response = self.service.users().messages().list(
                     userId=self.user_id,
-                    maxResults=self.maxResults,
                     labelIds=label_ids,
                     pageToken=page_token
                 ).execute()
@@ -171,7 +167,7 @@ class Message:
                 else:
                     self.labels.append(l.capitalize())
 
-        self.timestamp = internalDate_to_timestamp(message['internalDate'])
+        self.timestamp = time_interface.internalDate_to_timestamp(message['internalDate'])
 
         self.snippet = message['snippet']
 

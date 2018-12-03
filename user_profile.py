@@ -19,6 +19,7 @@ class User:
 user_dict = {
     "Andre": User("Andre Ehrlich", "ehrlichandre@gmail.com", "Northwestern", "-6:00"),
     "Joe": User("Joe Chookaszian", "joeisdumb@gmail.com", "Northwestern", "-8:00"),
+    "George": User("George McGovern", "georgie123mcgov@gmail.com", "Northwestern", "-6:00")
 }
 
 # print(user_dict['Andre'])

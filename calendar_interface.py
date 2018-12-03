@@ -21,25 +21,23 @@ class Calendar:
 
 
     ''' Initiate authorized service for gmail API with specified account '''
-    def __init__(self, service, user_id, maxResults, user, time_service):
+    def __init__(self, service, user_id, user, time_service):
         self.service = service
         self.user_id = user_id
         self.user = user
-        self.maxResults = maxResults
         self.time_service = time_service
-        self.contacts = {} # key: value of name: (email, [event])
-        self.locations = {} # key: value of location: [event]
+        # self.contacts = {} # key: value of name: (email, [event])
+        # self.locations = {} # key: value of location: [event]
 
     ''' Get the next ten upcoming events'''
     def get_next_ten_events(self):
         # print('Getting the upcoming 10 events')
 
-        now = self.time_service.get_time_now()
+        now, end_of_day = self.time_service.get_time_now_and_eod()
 
         events_result = self.service.events().list(
             calendarId='primary',
             timeMin=now,
-            maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -127,37 +125,8 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
-            if "attendees" in event:
-                attendees = event["attendees"]
-                for attendee in attendees:
-                    email = attendee["email"].lower()
-                    try:
-                        name = attendee["displayName"].lower()
-                    except KeyError: # if no display name, using email username
-                        name = email.split("@")[0].lower()
-                    if name in self.contacts:
-                        corresponding_events = self.contacts[name][1]
-                        if event not in corresponding_events:
-                            corresponding_events.append(event)
-                    else:
-                        self.contacts[name] = (email, [event])
-
-            if "location" in event:
-                location = event["location"].lower()
-                if location in self.locations:
-                    corresponding_events = self.locations[location]
-                    if event not in corresponding_events:
-                        corresponding_events.add(event)
-                else:
-                    self.locations[location] = [event]
-
 
         return events_processed
-
-    ''' Keyword match to events in daily calendar. '''
-    def tell_me_more_about_event(self, keywords_to_match, part_of_event):
-        return 0
-
 
     def getEventsWithAttendees(self, attendee):
 
@@ -169,7 +138,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -212,7 +180,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -241,7 +208,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -269,7 +235,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -298,7 +263,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -327,7 +291,6 @@ class Calendar:
             calendarId='primary',
             timeMin=now,
             timeMax=end_of_day,
-            # maxResults=self.maxResults,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
@@ -401,11 +364,21 @@ class Event():
                         self.keywords.append(summary_list[to_index+1:])
 
         if 'location' in event:
-            self.location = event['location']
+            self.location = event["location"].lower()
+
+            # if location in self.locations:
+            #     corresponding_events = self.locations[location]
+            #     if event not in corresponding_events:
+            #         corresponding_events.add(event)
+            # else:
+            #     self.locations[location] = [event]
+
         if 'description' in event:
             self.description = event['description']
+
         if 'link' in event:
             self.link = event['link']
+
         if 'attendees' in event:
             for x in event['attendees']:
                 if 'displayName' in x:
