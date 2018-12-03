@@ -22,12 +22,13 @@ class Mail:
     def __init__(self, service, user_id, user, time_service):
         self.service = service
         self.user_id = user_id
-        self.user = user
+        # self.user = user
         self.time_service = time_service
 
 
     def get_user_profile(self):
         return self.service.users().getProfile(userId = self.user_id).execute()
+
 
     ''' API call GET message matching id, then parse it into string represenation '''
     def get_message_by_id(self, msg_id):

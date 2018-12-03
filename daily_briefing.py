@@ -111,6 +111,8 @@ class DailyBriefing:
 
         speak("\n\nTESTING DAILY BRIEFING INTERFACE\n\n", "test_0")
 
+        print(self.mail.ListMessagesWithLabels(["UNREAD"]))
+
         # messages = self.mail.ListMessagesMatchingQuery("coffee")
         # for x in messages:
         #     print(x)
@@ -143,31 +145,19 @@ class DailyBriefing:
         # United Nations. That is all of you scheduled events for the day.''', title="long_read")
 
 
-        print("ListMessagesMatchingQuery meeting ")
-        messages = self.mail.ListMessagesMatchingQuery('meeting')
-        if messages:
-            for m in messages:
-                speak(repr(m), "test_2")
-
-
-        speak("ListMessagesMatchingQuery photos", "test_3")
-        msgs = self.mail.ListMessagesMatchingQuery("photos")
-        if msgs:
-            for m in msgs:
-                speak(m, "test_4")
-
         speak("Listing labels used by this gmail account!", "test_5")
-        for label in self.mail.get_labels():
-            speak(label, "test_6")
+        speak(" ".join(self.mail.get_labels()), "test_6")
 
 
         speak('''List messages that match query''', "test_7")
-        query_terms = ['hike', 'meet', 'see you']
+        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf']
 
         for query in query_terms:
-            speak("\nterm \""+ query +"\" ...\n\n" , "test_8")
-            for msg in self.mail.ListMessagesMatchingQuery(query):
-                speak(msg, "test_9")
+            print("\nterm \""+ query +"\" ...\n\n" , "test_8")
+            messages = self.mail.ListMessagesMatchingQuery(query)
+            if messages:
+                for m in messages:
+                    print(m, "test_9")
 
 
         '''
@@ -179,7 +169,7 @@ class DailyBriefing:
         print(''' Get messages that have a certain Label ''')
         for label in label_terms:
             # speak("Getting all "+ label+" messages \n\n")
-            self.mail.ListMessagesWithLabels([label])
+            print(self.mail.ListMessagesWithLabels([label]))
 
 
     # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
