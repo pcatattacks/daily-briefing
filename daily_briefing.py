@@ -113,29 +113,13 @@ class DailyBriefing:
 
         print(self.mail.ListMessagesWithLabels(["UNREAD"]))
 
-        # messages = self.mail.ListMessagesMatchingQuery("coffee")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("discussion")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Lunch")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Finance")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Dinner")
-        # for x in messages:
-        #     print(x)
-
         # print(''' Example usage of linkedin feature. ''')
         # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
         #
-        # speak(''' Next 10 events on the Calendar ''', "test_0")
-        # events = self.cal.get_next_ten_events()
-        # for i, event in enumerate(events):
-        #     speak(repr(event), "test_0")
+        speak(''' Next 10 events on the Calendar ''', "test_0")
+        events = self.cal.get_next_ten_events()
+        for i, event in enumerate(events):
+            speak(repr(event), "test_0")
 
         # print(''' Example of text to speech ''')
         # speak(text='''Good morning. Would you like to go over your agenda for
@@ -150,7 +134,7 @@ class DailyBriefing:
 
 
         speak('''List messages that match query''', "test_7")
-        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf']
+        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf' "discussion", "Lunch", "Finance", "Dinner"]
 
         for query in query_terms:
             print("\nterm \""+ query +"\" ...\n\n" , "test_8")
@@ -175,8 +159,6 @@ class DailyBriefing:
     # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
     def listen_for_user_input(self, timeout=120):
 
-        print("\n")
-
         user_in = ""
 
         ''' Wait indefinitely for user input '''
@@ -190,14 +172,17 @@ class DailyBriefing:
 
 
     def get_job_title_from_linked_in(self, name):
+        # print("get_job_title_from_linked_in", name)
         job_title = "No Job Title Found"
 
         linkedin_profiles = get_linkedin_profiles_by_query(name)
-        # speak(linkedin_profiles, "linkedin_status_0")
-        job_title = ''
+
         if linkedin_profiles:
-            print(linkedin_profiles)
+
+            # print(linkedin_profiles)
+
             hcard = linkedin_profiles[0]['hcard']
+
             if 'title' in hcard:
                 job_title = hcard['title']
 
@@ -368,9 +353,9 @@ class DailyBriefing:
                 if self.user.name == attendee:
                     event.attendees.remove(self.user.name)
 
-                # else:
-                    # ''' Linkedin for attendees '''
-                    # attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
+                else:
+                    ''' Linkedin for attendees '''
+                    attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
 
             if event.creator == self.user.name:
                 event.creator = "you"
@@ -445,7 +430,7 @@ class DailyBriefing:
                     ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
                     if event_counter == 0:
                         speak(text=briefing_subject, title="briefing_subject")
-                    
+
                     print("\n")
 
                     ''' print and read the event out loud line by line '''
@@ -465,8 +450,8 @@ class DailyBriefing:
                 # If we have finished going through all prepared_events, reset the list of prepared events
                 prepared_events = []
 
-                ''' We have read all the events prepared for the briefing '''
-                speak(text="That concludes your briefing", title="conclusion")
+                # ''' We have read all the events prepared for the briefing '''
+                # speak(text="That concludes your briefing", title="conclusion")
 
 
 
