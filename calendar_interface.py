@@ -54,7 +54,9 @@ class Calendar:
 
     def getEventsInRange(self, timeStart, timeEnd):
         time_zone = pytz.timezone('America/Chicago')
-        date = (self.time_service.get_time_now_and_eod()[0]).date()
+        now, end_of_day = self.time_service.get_time_now_and_eod_date()
+        date = now[0]
+        end_of_day = end_of_day.strftime('%Y-%m-%dT%H:%M:%S-06:00')
 
         ''' Parse given start and end times to generate datetime objects '''
         if ":" in timeStart:
@@ -109,7 +111,7 @@ class Calendar:
         # print('get_todays_events')  # debug
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
-
+        now = now[0]
         events_result = self.service.events().list(
             calendarId='primary',
             timeMin=now,
@@ -133,7 +135,7 @@ class Calendar:
         # print('getEventsWithAttendees ', attendee)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
-
+        now = now[0]
         events_result = self.service.events().list(
             calendarId='primary',
             timeMin=now,
@@ -217,6 +219,7 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
+            print(event['location'])
             if location.upper() == event['location'].upper():
                 resultEvents.append(event)
         events_processed = []
@@ -409,4 +412,5 @@ class Event():
             out_str += 'Attendees: {}\n'
             newList = ",".join(self.attendees)
             format_arg_list.append(newList)
+        
         return out_str.format(*format_arg_list)

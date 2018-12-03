@@ -230,6 +230,7 @@ class DailyBriefing:
         elif "events at " in user_in:
             ''' user input e.g.:  what are my events at tech? '''
             location = user_in.split("events at ")[1].rstrip() # location = tech
+            print(location)
             new_events = self.cal.getEventsAtLocation(location)
             new_events_flag = 1
             briefing_subject = "\nHere are events at {}".format(location)
