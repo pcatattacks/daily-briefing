@@ -111,7 +111,6 @@ class Calendar:
         # print('get_todays_events')  # debug
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
-        now = now[0]
         events_result = self.service.events().list(
             calendarId='primary',
             timeMin=now,
@@ -219,7 +218,6 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
-            print(event['location'])
             if location.upper() == event['location'].upper():
                 resultEvents.append(event)
         events_processed = []
