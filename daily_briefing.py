@@ -247,23 +247,28 @@ class DailyBriefing:
             new_events = self.cal.getEventsWithAttendees(person)
             new_events_flag = 1
             briefing_subject = "Here are events with {}".format(person)
+
         elif "evening" in user_in:
             new_events = self.cal.getEventsInRange("18", "23:59")
             new_events_flag = 1
             briefing_subject = "Here are events in the evening"
+
         elif "afternoon" in user_in:
             new_events = self.cal.getEventsInRange("12:01","17:59")
             new_events_flag = 1
             briefing_subject = "Here are the events in the afternoon"
+
         elif "morning" in user_in:
             new_events = self.cal.getEventsInRange("8","12")
             new_events_flag = 1
             briefing_subject = "Here are events in the morning"
+
         elif "events related to" in user_in:
             keyword = user_in.split("events related to ")[1].rstrip()
             new_events = self.cal.getEventsWithKeywordsInDescription(keyword)
             new_events_flag = 1
             briefing_subject = "Here are events related to {}".format(keyword)
+
         elif any(word in user_in for word in ["am", "pm"]):
             ''' user input e.g.: what is my 10AM? '''
             words = user_in.split()
@@ -279,6 +284,7 @@ class DailyBriefing:
         elif "last event" in user_in:
             ''' get more information about event from additional sources '''
             speak("getting more info on this event", "more_info_status")
+
         #''' Parse requests for more information on something '''
         elif "about" in user_in:
             words = user_in.split()
@@ -358,33 +364,49 @@ class DailyBriefing:
 
 
     def preprocess_list_of_events(self, events):
+
         ''' preprocess new events before converting to spoken word '''
+
         for event in events:
+
             '''Remove your name from attendee list'''
             for attendee in event.attendees:
+
                 if self.user.name == attendee:
                     event.attendees.remove(self.user.name)
+
                 else:
                     ''' Linkedin for attendees '''
                     attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
+
             if event.creator == self.user.name:
                 event.creator = "you"
 
             ''' Get sumplementary information from emails matching terms from summary '''
-            if event.keyword:
-                query = this_event.keyword
+            if not event.keywords:
+                queries = [max(event.summary.split(" "), key=len)]
             else:
-                longest_word_in_summary = max(event.summary.split(" "), key=len)
-                if len(event.summary.split(" ")) > 3:
-                    query = longest_word_in_summary
-                else:
-                    query = event.summary
-            msgs = self.mail.ListMessagesMatchingQuery(query)
+                queries = event.keywords
+
+            for query in queries:
+
+                print("getting messages matching query: ", query)
+
+                emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
+
+                if emails_matching_query:
+                    for email in emails_matching_query:
+                        print(email.subject, email.snippet)
+
+                # event.related_emails
 
             ''' Pull up the latest email related to this event'''
             linkedin_profiles = None
-            if msgs:
-                event.related_email = "\n EMAIL RELATED TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n"
+
+            # if emails_matching_query:
+                # print(emails_matching_query)
+                # print(emails_matching_query[0].subject, emails_matching_query[0].snippet)
+                # event.related_email = "\n EMAIL RELATED TO QUERY \"" + query + "\":\n" + emails_matching_query[0].subject + "\n"
                 # speak("\nRELATED EMAIL TO QUERY \"" + query + "\":\n" + msgs[0].subject + "\n", "relevant_email_status_0")
                 # speak(repr(msgs[0]), "relevant_email")
 

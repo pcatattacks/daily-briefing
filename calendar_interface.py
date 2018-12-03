@@ -141,7 +141,7 @@ class Calendar:
                             corresponding_events.append(event)
                     else:
                         self.contacts[name] = (email, [event])
-            
+
             if "location" in event:
                 location = event["location"].lower()
                 if location in self.locations:
@@ -161,7 +161,7 @@ class Calendar:
 
     def getEventsWithAttendees(self, attendee):
 
-        print('getEventsWithAttendees ', attendee)
+        # print('getEventsWithAttendees ', attendee)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -193,7 +193,7 @@ class Calendar:
 
     def getEventsAtTime(self, time):
 
-        print('getEventsAtTime', time)
+        # print('getEventsAtTime', time)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -223,7 +223,7 @@ class Calendar:
 
     def getEventsAtLocation(self, location):
 
-        print("getEventsAtLocation", location)
+        # print("getEventsAtLocation", location)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -251,7 +251,7 @@ class Calendar:
 
     def getEventsWithKeywordsInTitle(self, keywords):
 
-        print('getEventsWithKeywordsInTitle, ', keywords)
+        # print('getEventsWithKeywordsInTitle, ', keywords)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -280,7 +280,7 @@ class Calendar:
 
     def getEventsWithKeywordsInDescription(self, keywords):
 
-        print('getEventsWithKeywordsInDescription', keywords)
+        # print('getEventsWithKeywordsInDescription', keywords)
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -309,7 +309,7 @@ class Calendar:
 
     def eventIsConfirmed(self, eventTitle):
 
-        print('eventIsConfirmed,' + eventTitle + "?")
+        # print('eventIsConfirmed,' + eventTitle + "?")
 
         now, end_of_day = self.time_service.get_time_now_and_eod()
 
@@ -355,13 +355,13 @@ class Event():
         self.location = "" # (address)
         self.description = ""
         self.creator = ""
-        # self.organizer = ""
         self.attendees = []
+        self.keywords = []
+        self.related_emails = []
+        # self.organizer = ""
         # self.link = ""
         # self.source = ""
         # self.attachments = []
-        self.keyword = ""
-        # self.relevant_emails = []
 
         event_start = event['start']
         event_end = event['end']
@@ -378,9 +378,18 @@ class Event():
 
         if 'summary' in event:
             self.summary = event['summary']
-            if "meeting with" in self.summary:
-                self.attendees.append(self.summary.split("with")[1].split("to discuss")[0])
-                self.keyword = self.summary.split("with")[1].split("to discuss")[1]
+
+            if "with" in self.summary:
+                summary_list = self.summary.split() # split by space
+                with_index = summary_list.index("with")
+
+                self.keywords.append(summary_list[with_index-1])
+                self.attendees.append(summary_list[with_index+1])
+
+                if "to" in summary_list:
+                        to_index = summary_list.index("to")
+                        self.keywords.append(summary_list[to_index+1:])
+
         if 'location' in event:
             self.location = event['location']
         if 'description' in event:

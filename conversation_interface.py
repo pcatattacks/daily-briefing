@@ -34,17 +34,23 @@ def prepare_list_of_events_to_brief(events):
 
         # print(x, event)
 
-        ''' Say which number event in the day this is '''
+        ''' Say which number event in the list this is '''
         event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
+
         event.lines = event_str.split("\n")
-        for line in event.lines:
-            if not line:
-                event.lines.remove(line)
+
+        if event.related_emails:
+            first_email = event.related_emails[0]
+            email_str = first_email.subject + first_email.snippet
+            event.lines.append(email_str)
+
+        if "" in event.lines:
+            event.lines.remove("")
+
         event.filenames = []
+
         for i, line in enumerate(event.lines):
             event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
-
-        # print(event.filename, event_str)
 
     return events
 
