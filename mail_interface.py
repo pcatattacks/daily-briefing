@@ -80,14 +80,15 @@ class Mail:
 
                 messages.extend(response['messages'])
 
-                ''' Get the actual message content,
-                convert it to simple Message object
-                '''
-                messages = map(self.get_message_by_id, messages)
-                for m in messages:
-                    if not m.subject and not m.snippet:
-                        messages.remove(m)
-                return messages
+            ''' Get the actual message content,
+            convert it to simple Message object
+            '''
+            messages = map(self.get_message_by_id, messages)
+
+            for m in messages:
+                if not m.subject and not m.snippet:
+                    messages.remove(m)
+            return messages
 
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
@@ -105,9 +106,6 @@ class Mail:
             if 'messages' in response:
                 messages.extend(response['messages'])
 
-                for x in messages:
-                    self.get_message_by_id(x)
-
             while 'nextPageToken' in response:
                 page_token = response['nextPageToken']
                 response = self.service.users().messages().list(
@@ -117,12 +115,13 @@ class Mail:
                 ).execute()
                 messages.extend(response['messages'])
 
-                ''' Get the actual message content,
-                convert it to simple Message object
-                '''
-                messages = map(self.get_message_by_id, messages)
+            ''' Get the actual message content,
+            convert it to simple Message object
+            '''
+            messages = map(self.get_message_by_id, messages)
 
-                return messages
+            return messages
+
         except errors.HttpError, error:
             print('An error occurred: %s' % error)
 
