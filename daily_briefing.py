@@ -202,6 +202,7 @@ class DailyBriefing:
     def get_job_title_from_linked_in(self, name):
         linkedin_profiles = get_linkedin_profiles_by_query(name)
         # speak(linkedin_profiles, "linkedin_status_0")
+        job_title = ''
         if linkedin_profiles:
             hcard = linkedin_profiles[0]['hcard']
             if 'title' in hcard:
@@ -233,41 +234,41 @@ class DailyBriefing:
             # events_type = 'day'
             new_events = self.cal.get_todays_events()
             new_events_flag = 1
-            briefing_subject = "Here are today's events"
+            briefing_subject = "\nHere are today's events"
 
         elif "events at " in user_in:
             ''' user input e.g.:  what are my events at tech? '''
             location = user_in.split("events at ")[1].rstrip() # location = tech
             new_events = self.cal.getEventsAtLocation(location)
             new_events_flag = 1
-            briefing_subject = "Here are events at {}".format(location)
+            briefing_subject = "\nHere are events at {}".format(location)
 
         elif "events with " in user_in:
             person = user_in.split("events with ")[1].rstrip() # location = tech
             new_events = self.cal.getEventsWithAttendees(person)
             new_events_flag = 1
-            briefing_subject = "Here are events with {}".format(person)
+            briefing_subject = "\nHere are events with {}".format(person)
 
         elif "evening" in user_in:
             new_events = self.cal.getEventsInRange("18", "23:59")
             new_events_flag = 1
-            briefing_subject = "Here are events in the evening"
+            briefing_subject = "\nHere are events in the evening"
 
         elif "afternoon" in user_in:
             new_events = self.cal.getEventsInRange("12:01","17:59")
             new_events_flag = 1
-            briefing_subject = "Here are the events in the afternoon"
+            briefing_subject = "\nHere are the events in the afternoon"
 
         elif "morning" in user_in:
             new_events = self.cal.getEventsInRange("8","12")
             new_events_flag = 1
-            briefing_subject = "Here are events in the morning"
+            briefing_subject = "\nHere are events in the morning"
 
         elif "events related to" in user_in:
             keyword = user_in.split("events related to ")[1].rstrip()
             new_events = self.cal.getEventsWithKeywordsInDescription(keyword)
             new_events_flag = 1
-            briefing_subject = "Here are events related to {}".format(keyword)
+            briefing_subject = "\nHere are events related to {}".format(keyword)
 
         elif any(word in user_in for word in ["am", "pm"]):
             ''' user input e.g.: what is my 10AM? '''
@@ -279,7 +280,7 @@ class DailyBriefing:
                 time = time.split("pm")[0] + 12
             new_events = self.cal.getEventsAtTime(time)
             new_events_flag = 1
-            briefing_subject = "Here is your event at {}".format(time)
+            briefing_subject = "\nHere is your event at {}".format(time)
 
         elif "last event" in user_in:
             ''' get more information about event from additional sources '''
@@ -452,8 +453,8 @@ class DailyBriefing:
                     ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
                     if event_counter == 0:
                         speak(text=briefing_subject, title="briefing_subject")
-
-                    print("\n\nEVENT ", event_counter)
+                    
+                    print("\n")
 
                     ''' print and read the event out loud line by line '''
                     for i, line in enumerate(this_event.filenames):

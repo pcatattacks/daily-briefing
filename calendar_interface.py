@@ -56,7 +56,7 @@ class Calendar:
 
     def getEventsInRange(self, timeStart, timeEnd):
         time_zone = pytz.timezone('America/Chicago')
-        date = self.time_service.get_time_now_and_eod()[0].date()
+        date = (self.time_service.get_time_now_and_eod()[0]).date()
 
         ''' Parse given start and end times to generate datetime objects '''
         if ":" in timeStart:
@@ -194,9 +194,20 @@ class Calendar:
     def getEventsAtTime(self, time):
 
         # print('getEventsAtTime', time)
-
-        now, end_of_day = self.time_service.get_time_now_and_eod()
-
+        time_zone = pytz.timezone('America/Chicago')
+        if ":" in time:
+            minute = int(time.split(":")[1])
+            hour = int(time.split(":")[0])
+        else:
+            minute = 0
+            hour = int(time)
+        time = datetime.time(hour, minute)
+        now, end_of_day = self.time_service.get_time_now_and_eod_date()
+        date_time = datetime.datetime.combine(now[0], time)
+        now = now[0].strftime('%Y-%m-%dT%H:%M:%S-06:00')
+        end_of_day = end_of_day.strftime('%Y-%m-%dT%H:%M:%S-06:00')
+        date_time = time_zone.localize(date_time)
+        time = date_time.strftime('%Y-%m-%dT%H:%M:%S-06:00')
         events_result = self.service.events().list(
             calendarId='primary',
             timeMin=now,
@@ -212,7 +223,6 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start)
             if time == start:
                 resultEvents.append(event)
         events_processed = []
@@ -383,8 +393,8 @@ class Event():
                 summary_list = self.summary.split() # split by space
                 with_index = summary_list.index("with")
 
-                self.keywords.append(summary_list[with_index-1])
-                self.attendees.append(summary_list[with_index+1])
+                self.keywords.append(summary_list[with_index-1].encode('utf-8'))
+                self.attendees.append(summary_list[with_index+1].encode('utf-8'))
 
                 if "to" in summary_list:
                         to_index = summary_list.index("to")
@@ -399,7 +409,11 @@ class Event():
         if 'attendees' in event:
             for x in event['attendees']:
                 if 'displayName' in x:
-                    self.attendees.append(x['displayName'].encode('utf-8'))
+                    for i in self.attendees:
+                        if i == (x['displayName'].encode('utf-8')) or i == ((x['displayName'].encode('utf-8')).split(' ')[0]):
+                            #remove duplicate names, assuming first names are dups if they are equal
+                            self.attendees.remove(i)
+                    self.attendees.append((x['displayName'].encode('utf-8')))
 
 
     def __repr__(self, type='day'):
@@ -420,6 +434,6 @@ class Event():
 
         if self.attendees:
             out_str += 'Attendees: {}\n'
-            format_arg_list.append(self.attendees)
-
+            newList = ",".join(self.attendees)
+            format_arg_list.append(newList)
         return out_str.format(*format_arg_list)

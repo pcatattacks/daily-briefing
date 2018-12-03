@@ -72,3 +72,20 @@ class TimeService:
         # end_of_day = self.string_to_datetime(end_of_day, '%Y-%m-%dT%H:%M:%SZ')
 
         return now, end_of_day
+    
+    def get_time_now_and_eod_date(self):
+
+        # If self.demo is True, then we use our fake value for "now" to reference our demo calendar
+        if self.demo:
+            now = self.demo_now
+        else:
+            now = datetime.utcnow()
+
+        end_of_day = now + timedelta(days=1)
+        now = now.isoformat() + "Z"
+        end_of_day = end_of_day.isoformat() + 'Z'
+
+        now = string_to_datetime(now, '%Y-%m-%dT%H:%M:%SZ'),
+        end_of_day = string_to_datetime(end_of_day, '%Y-%m-%dT%H:%M:%SZ')
+
+        return now, end_of_day
