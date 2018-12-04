@@ -193,11 +193,14 @@ class DailyBriefing:
             new_events_flag = 1
             briefing_subject = "You have {} events today".format(len(new_events))
 
-        elif "events at " in user_in:
+        elif "events at" in user_in:
             ''' user input e.g.:  what are my events at tech? '''
-            location = user_in.split("events at ")[1].rstrip() # location = tech
-            print
+            words = user_in.split()
+            index = words.index("at")
+            location = " ".join(words[index+1:])
             new_events = self.cal.getEventsAtLocation(location)
+            if not new_events:
+                print("No events at {} found.".format(location))
             new_events_flag = 1
             briefing_subject = "You have {} events at {}".format(len(new_events), location)
 
@@ -412,11 +415,21 @@ class DailyBriefing:
                         speak(text=briefing_subject, title="briefing_subject")
 
                     print("\n")
+                    ####################### commenting cause dont want speaking anymore ##############################
+                    # ''' print and read the event out loud line by line '''
+                    # for i, line in enumerate(this_event.filenames):
+                    #     print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
 
-                    ''' print and read the event out loud line by line '''
-                    for i, line in enumerate(this_event.filenames):
-                        print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
+                    #     ''' Handling interruptions... '''
+                    #     user_in = listen_for_user_input(timeout=0.5)
+                    #     new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
+                    #     user_in = ""
+                    #     if new_events_flag:
+                    #         break
 
+                    ########################### using this instead ###############################
+                    for line in this_event.lines:
+                        print_text_and_play_audio(repr(line))
                         ''' Handling interruptions... '''
                         user_in = listen_for_user_input(timeout=0.5)
                         new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)

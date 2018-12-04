@@ -250,8 +250,9 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
-            if location.upper() == event['location'].upper():
-                resultEvents.append(event)
+            if "location" in event and location.lower() in event['location'].lower():
+                if event not in resultEvents:
+                    resultEvents.append(event)
         self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:

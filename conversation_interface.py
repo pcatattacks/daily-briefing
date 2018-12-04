@@ -70,10 +70,10 @@ def prepare_list_of_events_to_brief(events):
         if "" in event.lines:
             event.lines.remove("")
 
-        event.filenames = []
-
-        for i, line in enumerate(event.lines):
-            event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
+        ############################ removing because dont want files ########################
+        # event.filenames = []
+        # for i, line in enumerate(event.lines):
+        #     event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
 
     return events
 
