@@ -233,7 +233,7 @@ class DailyBriefing:
             new_events_flag = 1
             briefing_subject = "\nHere are {} events related to {}".format(len(new_events), keyword)
 
-        elif any(word in user_in for word in ["am", "pm"]):
+        elif any(word in user_in for word in ["am", "pm", "AM", "PM"]):
             ''' user input e.g.: what is my 10AM? '''
             words = user_in.split()
             time = words[len(words)-1]
@@ -280,7 +280,8 @@ class DailyBriefing:
                     events = self.cal.locations[location]
                     print(" ------------------------------------------------- ")
                     print("I found the following events at {}:".format(location))
-                    print(json.dumps(events, indent=2))
+                    for event in events:
+                        print(Event(event))
                     print(" ------------------------------------------------- ")
                     # TODO - the above needs to be spoken and formatted
 
@@ -430,7 +431,9 @@ class DailyBriefing:
                 prepared_events = []
 
                 ''' We have read all the events prepared for the briefing '''
-                speak(text="That is all of the events you requested", title="conclusion")
+                speak(text="That is all of the events you requested\n\n", title="conclusion")
+            elif user_in:
+                speak(text="No related events found.\n\n", title="conclusion")
 
 
 

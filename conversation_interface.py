@@ -53,7 +53,8 @@ def prepare_list_of_events_to_brief(events):
         # print(x, event)
 
         ''' Say which number event in the list this is '''
-        event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
+        # event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
+        event_str = "Event {} is: \n".format(x) + repr(event)
 
         event.lines = event_str.split("\n")
 
@@ -76,9 +77,12 @@ def prepare_list_of_events_to_brief(events):
     return events
 
 
+# def speak(text, title):
+#     mp3_filename = create_file_to_speak(text=text, title=title) # dont need if not speaking
+#     print_text_and_play_audio(text, mp3_filename)
+
 def speak(text, title):
-    mp3_filename = create_file_to_speak(text=text, title=title)
-    print_text_and_play_audio(text, mp3_filename)
+    print_text_and_play_audio(text)
 
 
 def create_file_to_speak(text, title, slow=False):
@@ -99,11 +103,17 @@ def mpg321_mp3_call_quiet(filename):
     os.system(mpg321_mp3_call_quiet1)
 
 
-def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
+# def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
 
-    ''' Print the text to accompany speech '''
-    # print(mp3_filename)
+#     ''' Print the text to accompany speech '''
+#     print(mp3_filename)
+#     print(text)
+
+#     ''' Load and playlatest daily_briefing mp3 file'''
+#     # mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
+
+
+# redefining it here without speaking - taking mp3_filename arg out.
+# while this is here, it will override the previous function.
+def print_text_and_play_audio(text, slow=False, duration=False):
     print(text)
-
-    ''' Load and playlatest daily_briefing mp3 file'''
-    mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby

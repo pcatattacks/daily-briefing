@@ -308,8 +308,9 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             for word in keywords:
-                if word in event['description']:
-                    resultEvents.append(event)
+                if "description" in event and word in event['description']:
+                    if event not in resultEvents:
+                        resultEvents.append(event)
         self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
