@@ -18,14 +18,24 @@ import sys
 
 # def listen_to_user():
 #     print(sr.Microphone.list_microphone_names())
-#     print("Foo")
 #     with mic as source:
 #         recognizer.adjust_for_ambient_noise(source)
 #         audio = recognizer.listen(source)
 #     print("bar")
 #     return recognizer.recognize_google(audio)
 
-# input: timeout (integer): specify number of seconds to wait, 0 = no timeout
+
+''' list files in a specified directory '''
+def list_files_in_directory(mypath):
+    onlyfiles = [f for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+    return onlyfiles
+
+
+'''
+    listen_for_user_input
+    input: timeout (integer): specify number of seconds to wait, 0 = no timeout
+
+'''
 def listen_for_user_input(timeout=120):
 
     user_in = ""
@@ -35,9 +45,10 @@ def listen_for_user_input(timeout=120):
 
     ''' If the user has said something, parse user input and follow their commands '''
     if sys.stdin in r:
-        user_in = sys.stdin.readline().lower()
+        user_in = sys.stdin.readline()
 
-    return user_in
+    return user_in.lower()
+
 
 order_dict = {
                 0: "first",     1: "second",    2: "third",
@@ -46,44 +57,61 @@ order_dict = {
                 9: "tenth"
             }
 
-def prepare_list_of_events_to_brief(events):
 
-    for x, event in enumerate(events):
+'''
+    prepare_list_of_events_to_brief
+    Takes a list of events and subject string (e.g. "You have 10 events today").
+    Generates audio files from text-to-speech.
+    We'll save these files in a cached folder for the demo, to read from if called again
+'''
+def prepare_list_of_events_to_brief(events, subject):
 
-        # print(x, event)
+    if not events:
+        return events
 
-        ''' Say which number event in the list this is '''
-        # event_str = "Your {} event is ".format(order_dict[x]) + repr(event)
-        event_str = "Event {} is: \n".format(x) + repr(event)
+    ''' Translate subject string into '''
+    # subject = subject.translate(None, string.punctuation) # remove punctuation
 
-        event.lines = event_str.split("\n")
+    subject = subject.split("events")[1].split()
+    cache_dir_path = "demo/events_" + "_".join(subject) + "/"
 
-        ''' Attach a relevant email subject and snippet to end of event '''
-        if event.related_emails:
-            first_email = event.related_emails[0]
-            email_strings = ["Related Email:", first_email.subject, first_email.snippet]
-            for email_str in email_strings:
-                email_str.encode('utf-8')
+    ''' Check if the events have already been prepared and cached'''
+    cached_files = []
 
-            event.lines += email_strings
+    if os.path.exists(cache_dir_path):
+        cached_files = list_files_in_directory(cache_dir_path)
 
-        if "" in event.lines:
-            event.lines.remove("")
+    if cached_files:
+        ''' Add names of cached files to event object'''
+        for event_number, event in enumerate(events):
+            event_num_string = "event" + str(event_number)
+            event.filenames = [cache_dir_path + f for f in cached_files if event_num_string in f]
+            event.filenames.sort()
+    else:
+        ''' make directory to cache events for this subject'''
+        os.makedirs(cache_dir_path)
 
-        ############################ removing because dont want files ########################
-        # event.filenames = []
-        # for i, line in enumerate(event.lines):
-        #     event.filenames.append(create_file_to_speak(line, title="event_"+str(x)+"_line"+str(i)))
+        ''' Convert each event into a list of mp3 speech files '''
+        for event_number, event in enumerate(events):
+
+            ''' For each line in the event, create a tts mp3 file and print the line in a txt file'''
+            for line_number, line in enumerate(event.lines):
+
+                ''' Format filename e.g demo/todays_events/event0_line0'''
+                this_filename = cache_dir_path + "event" + str(event_number) + "_line" + str(line_number)
+
+                ''' Create a speech mp3 file of the line'''
+                event.filenames.append(create_file_to_speak(line, title=this_filename))
 
     return events
 
 
-# def speak(text, title):
-#     mp3_filename = create_file_to_speak(text=text, title=title) # dont need if not speaking
-#     print_text_and_play_audio(text, mp3_filename)
-
 def speak(text, title):
-    print_text_and_play_audio(text)
+    mp3_filename = create_file_to_speak(text=text, title=title) # dont need if not speaking
+    print_text_and_play_audio(text, mp3_filename)
+
+# def speak(text, title):
+#     print_text_and_play_audio(text)
 
 
 def create_file_to_speak(text, title, slow=False):
@@ -104,17 +132,17 @@ def mpg321_mp3_call_quiet(filename):
     os.system(mpg321_mp3_call_quiet1)
 
 
-# def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
+def print_text_and_play_audio(text, mp3_filename, slow=False, duration=False):
 
-#     ''' Print the text to accompany speech '''
-#     print(mp3_filename)
-#     print(text)
-
-#     ''' Load and playlatest daily_briefing mp3 file'''
-#     # mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
-
-
-# redefining it here without speaking - taking mp3_filename arg out.
-# while this is here, it will override the previous function.
-def print_text_and_play_audio(text, slow=False, duration=False):
+    ''' Print the text to accompany speech '''
+    # print(mp3_filename)
     print(text)
+
+    ''' Load and playlatest daily_briefing mp3 file'''
+    mpg321_mp3_call_quiet(mp3_filename) # commented this out for Coby
+
+
+# # redefining it here without speaking - taking mp3_filename arg out.
+# # while this is here, it will override the previous function.
+# def print_text_and_play_audio(text, slow=False, duration=False):
+#     print(text)

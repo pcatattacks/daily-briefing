@@ -171,26 +171,27 @@ class DailyBriefing:
 
 
     '''
-        The parse_user_input function:
-        input arg: user_in (string)
-        Parses for keywords to make the appropriate Google API call
+        The parse_user_input:
+            Parses for keywords to make the appropriate Google API calls
+        input:
+            user_in: string
+        output:
+            new_events: list of events (can be empty)
+            briefing_subject: string, phrase that ends with "{num_events} events {unique description of event list}"
+            command: string, word to control daily_breifing playback.
     '''
     def parse_user_input(self, user_in):
 
-        new_events_flag = 0
+        ''' Initialize output variables'''
         new_events = []
         briefing_subject = ""
-        immediate_response = ""
+        command = None
 
         if not user_in:
-            return new_events_flag, new_events, "No user input"
+            return new_events, "No user input", command
 
         if any(word in user_in for word in ["daily briefing", "today", "schedule"]):
-            ''' the default is get_next_ten_events '''
-            speak("Ok, preparing today's events...", "daily_briefing_response_0")
-            # events_type = 'day'
             new_events = self.cal.get_todays_events()
-            new_events_flag = 1
             briefing_subject = "You have {} events today".format(len(new_events))
 
         elif "events at" in user_in:
@@ -200,41 +201,34 @@ class DailyBriefing:
             location = " ".join(words[index+1:])
             new_events = self.cal.getEventsAtLocation(location)
             if not new_events:
-                print("No events at {} found.".format(location))
-            new_events_flag = 1
+                speak("No events at found.".format(location), "404")
             briefing_subject = "You have {} events at {}".format(len(new_events), location)
 
         elif "events with " in user_in:
             person = user_in.split("events with ")[1].rstrip() # location = tech
             new_events = self.cal.getEventsWithAttendees(person)
-            new_events_flag = 1
-            briefing_subject = "You have {} events at {}".format(len(new_events), person)
+            briefing_subject = "You have {} events with {}".format(len(new_events), person)
 
         elif "free time" in user_in:
             new_events = self.cal.get_free_time()
-            new_events_flag =1
             briefing_subject = "Here are times you have available:"
 
         elif "evening" in user_in:
             new_events = self.cal.getEventsInRange("18", "23:59")
-            new_events_flag = 1
             briefing_subject = "You have {} events in the evening".format(len(new_events))
 
         elif "afternoon" in user_in:
             new_events = self.cal.getEventsInRange("12:01","17:59")
-            new_events_flag = 1
             briefing_subject = "You have {} events in the afternoon".format(len(new_events))
 
         elif "morning" in user_in:
             new_events = self.cal.getEventsInRange("8","12")
-            new_events_flag = 1
             briefing_subject = "You have {} events in the morning".format(len(new_events))
 
         elif "events related to" in user_in:
             keyword = user_in.split("events related to ")[1].rstrip()
             new_events = self.cal.getEventsWithKeywordsInDescription(keyword)
-            new_events_flag = 1
-            briefing_subject = "\nHere are {} events related to {}".format(len(new_events), keyword)
+            briefing_subject = "You have {} events related to {}".format(len(new_events), keyword)
 
         elif any(word in user_in for word in ["am", "pm", "AM", "PM"]):
             ''' user input e.g.: what is my 10AM? '''
@@ -245,8 +239,7 @@ class DailyBriefing:
             else:
                 time = time.split("pm")[0] + 12
             new_events = self.cal.getEventsAtTime(time)
-            new_events_flag = 1
-            briefing_subject = "\nHere is your event at {}".format(time)
+            briefing_subject = "You have {} events at {}".format(len(new_events), time)
 
         elif "last event" in user_in:
             ''' get more information about event from additional sources '''
@@ -314,28 +307,33 @@ class DailyBriefing:
 
         elif "wait" in user_in:
             user_in_2 = listen_for_user_input()
-
-            new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in_2)
-            user_in_2 = ""
-
-            if new_events_flag:
-                new_events = self.preprocess_list_of_events(new_events)
-                prepared_events = prepare_list_of_events_to_brief(new_events)
-                new_events_flag = 0 # reset flag
+            prepared_events, briefing_subject, command = self.parse_user_input(user_in_2)
 
         elif "resume" in user_in:
             pass
+        elif any(word in user_in for word in ["skip", "next"]):
+            command = "skip"
+        elif any(word in user_in for word in ["stop", "quit", "exit"]):
+            command = "stop"
         else:
             speak("sorry, I don't know what to do for {}".format(user_in), "response_0")
 
-        return new_events_flag, new_events, briefing_subject
+        ''' Preproccess and prepare events to speak out loud '''
+        new_events = self.preprocess_list_of_events(new_events)
+        prepared_events = prepare_list_of_events_to_brief(new_events, briefing_subject)
+        if not prepared_events:
+            speak(briefing_subject, "response_0")
+        return prepared_events, briefing_subject, command
 
 
     def preprocess_list_of_events(self, events):
 
+        if not events:
+            return events
+
         ''' preprocess new events before converting to spoken word '''
 
-        for event in events:
+        for event_number, event in enumerate(events):
 
             '''Remove your name from attendee list'''
             for attendee in event.attendees:
@@ -348,10 +346,12 @@ class DailyBriefing:
 
             ''' Get sumplementary information from emails matching terms from summary '''
             if not event.keywords:
+                ''' get keywords from longest word in event summary '''
                 queries = [max(event.summary.split(" "), key=len)]
             else:
                 queries = event.keywords
 
+            ''' Try to get an email that matches all queries together'''
             query = " ".join(queries)
             emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
             if emails_matching_query:
@@ -359,6 +359,7 @@ class DailyBriefing:
                     if email not in event.related_emails:
                         event.related_emails.append(email)
             else:
+                ''' Else get emails by queries individually '''
                 for query in queries:
                     emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
                     if emails_matching_query:
@@ -366,24 +367,24 @@ class DailyBriefing:
                             if email not in event.related_emails:
                                 event.related_emails.append(email)
 
-
-
-            ''' Pull up the latest email related to this event'''
+            ''' # TODO Get list of LinkedIn Profiles from attendees and emails'''
             linkedin_profiles = None
+
+            ''' Turn event into a list of strings that can be read by google text-to-speech '''
+            event.generate_lines(event_number)
 
         return events
 
     def converse(self):
 
         ''' What is the user asking to be briefed on?'''
-        new_events_flag, new_events, briefing_subject = 0, [], "No results"
-
-        ''' Timeout in seconds to wait for user input '''
+        new_prepared_events = []
         prepared_events = []
+        briefing_subject = "No results"
+        command = None
 
-        ''' At start-up, wait for the user to give a commmand
-            the default command should be to list the events for today '''
-        speak("Hello, {}!".format(self.user.name.split()[0]), "intro_0")
+        ''' Introduce Yourself '''
+        speak("Hello, {}! Welcome to Daily Briefing.".format(self.user.name.split()[0]), "intro_0")
 
         ''' Wait indefinitely for user input '''
         user_in = listen_for_user_input()
@@ -391,62 +392,69 @@ class DailyBriefing:
         ''' the big loop that runs the show '''
         while True:
 
-            if not user_in:
-                ''' If we've passed the introduction, wait 10.5 seconds for user input '''
-                user_in = listen_for_user_input(10.5)
+            ''' If there were new events (say from an interruption) transfer to prepared_events variable '''
+            if new_prepared_events:
+                prepared_events = new_prepared_events
+            else:
+                ''' Else, we need to figure out what events to prepare.
+                    If user hasn't said anything, wait for them to say something '''
+                if not user_in:
+                    ''' If we've passed the introduction, wait 10 seconds for user input '''
+                    user_in = listen_for_user_input(10)
 
-            ''' new_events_flag marks when user has made a request for a different set of events to be briefed on'''
-            new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
+                ''' Parse user input to determine which events to brief'''
+                prepared_events, briefing_subject, command = self.parse_user_input(user_in)
+
+            ''' Clear user_in variable '''
             user_in = ""
-
-            if new_events_flag:
-                new_events = self.preprocess_list_of_events(new_events)
-                prepared_events = prepare_list_of_events_to_brief(new_events)
-                new_events_flag = 0 # reset flag
 
             ''' If there are event files loaded for briefing... '''
             if prepared_events:
 
-                ''' Read out next event '''
+                ''' Introduce list of events '''
+                speak(text=briefing_subject, title="briefing_subject")
+
+                ''' Read out the events '''
                 for event_counter, this_event in enumerate(prepared_events):
 
-                    ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
-                    if event_counter == 0:
-                        speak(text=briefing_subject, title="briefing_subject")
-
                     print("\n")
-                    ####################### commenting cause dont want speaking anymore ##############################
-                    # ''' print and read the event out loud line by line '''
-                    # for i, line in enumerate(this_event.filenames):
-                    #     print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
+                    command = None
 
-                    #     ''' Handling interruptions... '''
-                    #     user_in = listen_for_user_input(timeout=0.5)
-                    #     new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
-                    #     user_in = ""
-                    #     if new_events_flag:
-                    #         break
+                    ''' print and read the event out loud line by line '''
+                    for line_number, line in enumerate(this_event.filenames):
 
-                    ########################### using this instead ###############################
-                    for line in this_event.lines:
-                        print_text_and_play_audio(repr(line))
+                        print_text_and_play_audio(repr(this_event.lines[line_number]), this_event.filenames[line_number])
+
                         ''' Handling interruptions... '''
                         user_in = listen_for_user_input(timeout=0.5)
-                        new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
-                        user_in = ""
-                        if new_events_flag:
+
+                        ''' Parse user input to determine which events to brief'''
+                        new_prepared_events, briefing_subject, command = self.parse_user_input(user_in)
+
+                        if command == "stop" or command == "skip":
                             break
 
-                    if new_events_flag:
+                        ''' If the user did ask for a new set of events, break '''
+                        if new_prepared_events:
+                            break
+
+                    if command == "stop":
+                        speak("Stopping", "conclusion_3")
+                        command = None
                         break
 
-                # If we have finished going through all prepared_events, reset the list of prepared events
+                    if new_prepared_events:
+                        break
+
+                ''' If we have finished going through all prepared_events, clear the list '''
                 prepared_events = []
 
-                ''' We have read all the events prepared for the briefing '''
-                speak(text="That is all of the events you requested\n\n", title="conclusion")
-            elif user_in:
-                speak(text="No related events found.\n\n", title="conclusion")
+                if not new_prepared_events:
+                    ''' We have read all the events prepared for the briefing '''
+                    speak(text="That is all of the events you requested.\nWould you like to go over something else?\n", title="conclusion_0")
+
+            # elif user_in:
+            #     speak(text="No related events found.\n\n", title="conclusion_1")
 
 
 

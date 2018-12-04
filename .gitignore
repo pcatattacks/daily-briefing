@@ -1,6 +1,3 @@
-# Sound outputs
-*.mp3
-
 # intellij settings
 .idea/
 

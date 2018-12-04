@@ -220,14 +220,16 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
-            print(event)
+            # print(event)
             start = event['start'].get('dateTime', event['start'].get('date'))
-            if time == start:
+            end = event['end'].get('dateTime', event['end'].get('date'))
+            if time == start or (time > start and time < end):
                 resultEvents.append(event)
         self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
+
         return events_processed
 
 
@@ -361,7 +363,7 @@ class Calendar:
                             corresponding_events.append(event)
                     else:
                         self.contacts[name] = (email, [event])
-            
+
             if "location" in event:
                 location = event["location"].lower()
                 if location in self.locations:
@@ -395,6 +397,7 @@ class Event():
         self.attendees = []
         self.keywords = []
         self.related_emails = []
+        self.filenames = []
         # self.organizer = ""
         # self.link = ""
         # self.source = ""
@@ -411,7 +414,7 @@ class Event():
             self.end = time_interface.string_to_datetime(event_end['dateTime'], 'dateTime')
         elif 'date' in event_end:
             self.end = time_interface.string_to_datetime(event_end['date'], 'date')
-        
+
         self.id = event['id']
 
         if 'summary' in event:
@@ -482,3 +485,24 @@ class Event():
             format_arg_list.append(newList)
 
         return out_str.format(*format_arg_list)
+
+
+    ''' Turn event into a list of strings that can be read by google text-to-speech '''
+    def generate_lines(self, event_number):
+
+        ''' Say which number event in the list this is '''
+        # event_str = "Your {} event is ".format(order_dict[event_number]) + repr(event)
+        event_str = "Event {} is: \n".format(event_number) + repr(self)
+
+        self.lines = event_str.split("\n")
+
+        ''' Attach a relevant email subject and snippet to end of event '''
+        if self.related_emails:
+            first_email = self.related_emails[0]
+            email_strings = [ "Related Email", first_email.subject, first_email.snippet ]
+            self.lines += email_strings
+
+        if "" in self.lines:
+            self.lines.remove("")
+
+        return self.lines
