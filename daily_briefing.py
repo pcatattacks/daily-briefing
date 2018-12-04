@@ -430,7 +430,7 @@ class DailyBriefing:
                 prepared_events = []
 
                 ''' We have read all the events prepared for the briefing '''
-                speak(text="That is all of the events you requested", title="conclusion")
+                speak(text="That is all the events you requested", title="conclusion")
 
 
 
