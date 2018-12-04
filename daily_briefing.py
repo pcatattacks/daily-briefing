@@ -113,6 +113,22 @@ class DailyBriefing:
 
         print(self.mail.ListMessagesWithLabels(["UNREAD"]))
 
+        # messages = self.mail.ListMessagesMatchingQuery("coffee")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("discussion")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Lunch")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Finance")
+        # for x in messages:
+        #     print(x)
+        # messages = self.mail.ListMessagesMatchingQuery("Dinner")
+        # for x in messages:
+        #     print(x)
+
         # print(''' Example usage of linkedin feature. ''')
         print(get_linkedin_profiles_by_query("Pranav Dhingra"))
         print(get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
@@ -137,7 +153,7 @@ class DailyBriefing:
 
 
         speak('''List messages that match query''', "test_7")
-        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf' "discussion", "Lunch", "Finance", "Dinner"]
+        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf']
 
         for query in query_terms:
             print("\nterm \""+ query +"\" ...\n\n" , "test_8")
@@ -161,6 +177,8 @@ class DailyBriefing:
 
     # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
     def listen_for_user_input(self, timeout=120):
+
+        print("\n")
 
         user_in = ""
 
@@ -199,7 +217,7 @@ class DailyBriefing:
         elif "events at " in user_in:
             ''' user input e.g.:  what are my events at tech? '''
             location = user_in.split("events at ")[1].rstrip() # location = tech
-            print(location)
+            print
             new_events = self.cal.getEventsAtLocation(location)
             new_events_flag = 1
             briefing_subject = "\nHere are events at {}".format(location)
@@ -209,6 +227,11 @@ class DailyBriefing:
             new_events = self.cal.getEventsWithAttendees(person)
             new_events_flag = 1
             briefing_subject = "\nHere are events with {}".format(person)
+
+        elif "free time" in user_in:
+            new_events = self.cal.get_free_time()
+            new_events_flag =1
+            briefing_subject = "\nHere are times you have available:"
 
         elif "evening" in user_in:
             new_events = self.cal.getEventsInRange("18", "23:59")
@@ -428,8 +451,8 @@ class DailyBriefing:
                 # If we have finished going through all prepared_events, reset the list of prepared events
                 prepared_events = []
 
-                # ''' We have read all the events prepared for the briefing '''
-                # speak(text="That concludes your briefing", title="conclusion")
+                ''' We have read all the events prepared for the briefing '''
+                speak(text="That concludes your briefing", title="conclusion")
 
 
 
