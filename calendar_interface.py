@@ -104,6 +104,29 @@ class Calendar:
             events_processed.append(Event(event))
         return events_processed
 
+    def get_free_time(self):
+
+        # print('get_todays_events')  # debug
+
+        now, end_of_day = self.time_service.get_time_now_and_eod()
+        events_result = self.service.events().list(
+            calendarId='primary',
+            timeMin=now,
+            timeMax=end_of_day,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        events = events_result.get('items', [])
+        events_processed = []
+        if not events:
+            print('No upcoming events found.')
+        for event in events:
+            events_processed.append(Event(event))
+        for i in xrange(len(events_processed) - 1):
+            current_item, next_item = events_processed[i], events_processed[i + 1]
+            print "Free time between",current_item.summary, "and", next_item.summary, ":",next_item.start-current_item.end, "mins."
+        events_processed = []
+        return events_processed
 
     ''' Reads out events of the Day '''
     def get_todays_events(self):
@@ -190,6 +213,7 @@ class Calendar:
         if not events:
             print('No upcoming events found.')
         for event in events:
+            print(event)
             start = event['start'].get('dateTime', event['start'].get('date'))
             if time == start:
                 resultEvents.append(event)
@@ -345,9 +369,10 @@ class Event():
         elif 'date' in event_start:
             self.start = time_interface.string_to_datetime(event_start['date'], 'date')
         if 'dateTime' in event_end:
-            self.start = time_interface.string_to_datetime(event_end['dateTime'], 'dateTime')
+            self.end = time_interface.string_to_datetime(event_end['dateTime'], 'dateTime')
         elif 'date' in event_end:
-            self.start = time_interface.string_to_datetime(event_end['date'], 'date')
+            self.end = time_interface.string_to_datetime(event_end['date'], 'date')
+        
         self.id = event['id']
 
         if 'summary' in event:
