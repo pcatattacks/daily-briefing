@@ -26,8 +26,8 @@ class Calendar:
         self.user_id = user_id
         self.user = user
         self.time_service = time_service
-        # self.contacts = {} # key: value of name: (email, [event])
-        # self.locations = {} # key: value of location: [event]
+        self.contacts = {} # key: value of name: (email, [event])
+        self.locations = {} # key: value of location: [event]
 
     ''' Get the next ten upcoming events'''
     def get_next_ten_events(self):
@@ -48,6 +48,7 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
+        self._populate_calendar_contacts(events)
 
         return events_processed
 
@@ -102,6 +103,7 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
+        self._populate_calendar_contacts(events)
         return events_processed
 
     def get_free_time(self):
@@ -122,6 +124,7 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
+        self._populate_calendar_contacts(events)
         for i in xrange(len(events_processed) - 1):
             current_item, next_item = events_processed[i], events_processed[i + 1]
             print "Free time between",current_item.summary, "and", next_item.summary, ":",next_item.start-current_item.end, "mins."
@@ -149,7 +152,7 @@ class Calendar:
             print('No upcoming events found.')
         for event in events:
             events_processed.append(Event(event))
-
+        self._populate_calendar_contacts(events)
         return events_processed
 
     def getEventsWithAttendees(self, attendee):
@@ -177,6 +180,7 @@ class Calendar:
                 if attendee.upper() == realPerson.upper():
                     resultEvents.append(event)
                     break;
+        self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -217,6 +221,7 @@ class Calendar:
             start = event['start'].get('dateTime', event['start'].get('date'))
             if time == start:
                 resultEvents.append(event)
+        self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -244,6 +249,7 @@ class Calendar:
         for event in events:
             if location.upper() == event['location'].upper():
                 resultEvents.append(event)
+        self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -272,6 +278,7 @@ class Calendar:
             for word in keywords:
                 if word in event['summary']:
                     resultEvents.append(event)
+        self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -300,6 +307,7 @@ class Calendar:
             for word in keywords:
                 if word in event['description']:
                     resultEvents.append(event)
+        self._populate_calendar_contacts(events)
         events_processed = []
         for event in resultEvents:
             events_processed.append(Event(event))
@@ -330,7 +338,33 @@ class Calendar:
                     print('True')
                 else:
                     print('False')
+        self._populate_calendar_contacts(events)
 
+    def _populate_calendar_contacts(self, event_list):
+        for event in event_list:
+            if "attendees" in event:
+                attendees = event["attendees"]
+                for attendee in attendees:
+                    email = attendee["email"].lower()
+                    try:
+                        name = attendee["displayName"].lower()
+                    except KeyError: # if no display name, using email username
+                        name = email.split("@")[0].lower()
+                    if name in self.contacts:
+                        corresponding_events = self.contacts[name][1]
+                        if event not in corresponding_events:
+                            corresponding_events.append(event)
+                    else:
+                        self.contacts[name] = (email, [event])
+            
+            if "location" in event:
+                location = event["location"].lower()
+                if location in self.locations:
+                    corresponding_events = self.locations[location]
+                    if event not in corresponding_events:
+                        corresponding_events.add(event)
+                else:
+                    self.locations[location] = [event]
 
 
 # TODO Parse calendar obj returned from google into a simpler custom 'Event'

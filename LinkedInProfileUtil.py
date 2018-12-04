@@ -46,8 +46,8 @@ def get_linkedin_profiles_by_query(query):
     try:
         profiles = [ {"profile_url":item["formattedUrl"], "hcard": item["pagemap"]["hcard"][0] } for item in results["items"] if "www.linkedin.com/in" in item["formattedUrl"]]
     except:
-        print "Something went wrong! The result of the request was:"
-        print(json.dumps(results, indent=2))
+        # print "Something went wrong! The result of the request was:"
+        # print(json.dumps(results, indent=2))
         pass
     return profiles
 
