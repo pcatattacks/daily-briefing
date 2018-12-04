@@ -170,6 +170,7 @@ class DailyBriefing:
             print(self.mail.ListMessagesWithLabels([label]))
 
 
+
     '''
         The parse_user_input:
             Parses for keywords to make the appropriate Google API calls
@@ -181,6 +182,14 @@ class DailyBriefing:
             command: string, word to control daily_breifing playback.
     '''
     def parse_user_input(self, user_in):
+
+
+        # ''' Input variables '''
+        # user_in_keywords = []
+        # api_call = "function to call"
+        # breifing_subject_string = "You have {} events at/with {}".format(number_events, briefing_subject)
+
+
 
         ''' Initialize output variables'''
         new_events = []
@@ -200,8 +209,8 @@ class DailyBriefing:
             index = words.index("at")
             location = " ".join(words[index+1:])
             new_events = self.cal.getEventsAtLocation(location)
-            if not new_events:
-                speak("No events at found.".format(location), "404")
+            # if not new_events:
+                # speak("No events at found.".format(location), "404")
             briefing_subject = "You have {} events at {}".format(len(new_events), location)
 
         elif "events with " in user_in:
@@ -320,11 +329,58 @@ class DailyBriefing:
 
         ''' Preproccess and prepare events to speak out loud '''
         new_events = self.preprocess_list_of_events(new_events)
-        prepared_events = prepare_list_of_events_to_brief(new_events, briefing_subject)
-        if not prepared_events:
-            speak(briefing_subject, "response_0")
+
+        # prepared_events = prepare_list_of_events_to_speak(new_events, briefing_subject)
+        # if not prepared_events:
+        #     speak(briefing_subject, "response_0")
         return prepared_events, briefing_subject, command
 
+
+    # def get_events_at_location(user_in, subject):
+    #     ''' user input e.g.:  what are my events at tech? '''
+    #     words = user_in.split()
+    #     index = words.index("at")
+    #     location = " ".join(words[index+1:])
+    #     new_events = self.cal.getEventsAtLocation(location)
+    #     briefing_subject = "{} "events at {}".format(len(new_events), location)
+    #     return new_events, briefing_subject
+    #
+    # def handle_user_input(self, user_in):
+    #
+    #     ''' List of dicts that contain the keywords to call different functions '''
+    #     user_input_cases = [
+    #         # {
+    #         #     "subject": "example_format",
+    #         #     "keywords": [],
+    #         #     "function_call": None,
+    #         #     "briefing_subject": "You have {} events at/with {}"
+    #         # },
+    #         {
+    #             "subject": "events_today"
+    #             "keywords": ["daily briefing", "today", "schedule"],
+    #             "function_call": self.cal.get_todays_events
+    #         },
+    #         {
+    #             "subject": "events_at_location",
+    #             "keywords": ["events at"],
+    #             "function_call": self.get_events_at_location
+    #         }
+    #     ]
+    #
+    #     ''' initialize output '''
+    #     events = []
+    #     briefing_subject = "No Events Found"
+    #
+    #     for case in user_input_cases:
+    #         if any(word in user_in for word in case['keywords']):
+    #             events = case['function_call']()
+    #             briefing_subject = "{} ".format(len(events)) + case["subject"].format(len(events))
+    #             break
+    #
+    #     ''' Preproccess events to get related email, replace user's name with 'you' '''
+    #     preprocessed_events = self.preprocess_list_of_events(events)
+    #
+    #     return preprocessed_events, briefing_subject
 
     def preprocess_list_of_events(self, events):
 
@@ -464,12 +520,15 @@ def main():
     ''' Parse command line arguments for demo and test'''
     use_demo_config = False
     run_test = False
+    speak = False
 
     arguments = sys.argv
     if "demo" in arguments:
         use_demo_config = True
     if "test" in arguments:
         run_test = True
+    if "speak" in arguments:
+        speak = True
 
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing(demo=use_demo_config)

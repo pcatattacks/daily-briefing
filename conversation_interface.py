@@ -59,12 +59,12 @@ order_dict = {
 
 
 '''
-    prepare_list_of_events_to_brief
+    prepare_list_of_events_to_speak
     Takes a list of events and subject string (e.g. "You have 10 events today").
     Generates audio files from text-to-speech.
     We'll save these files in a cached folder for the demo, to read from if called again
 '''
-def prepare_list_of_events_to_brief(events, subject):
+def prepare_list_of_events_to_speak(events, subject):
 
     if not events:
         return events

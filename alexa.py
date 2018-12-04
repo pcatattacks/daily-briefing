@@ -8,6 +8,13 @@ http://amzn.to/1LGWsLG
 """
 
 from __future__ import print_function
+from daily_briefing import *
+
+
+
+''' Global Variable to hold our DailyBreifing Object'''
+db = None
+
 
 
 # --------------- Helpers that build all of the responses ----------------------
@@ -47,16 +54,28 @@ def get_welcome_response():
     """ If we wanted to initialize the session to have some attributes we could
     add those here
     """
-
     session_attributes = {}
+
+    # Preload today's events
+
+    session_attributes["events_today"] = db.parse_user_input("events today")
+
     card_title = "Welcome"
-    speech_output = "Welcome to the Alexa Skills Kit sample. " \
-                    "Please tell me your favorite color by saying, " \
-                    "my favorite color is red"
+    speech_output = "Welcome to Daily Briefing " \
+                    "Would you like to go over your daily briefing?"
+                    # \
+                    # "my favorite color is red"
     # If the user either does not reply to the welcome message or says something
     # that is not understood, they will be prompted again with this text.
-    reprompt_text = "Please tell me your favorite color by saying, " \
-                    "my favorite color is red."
+    reprompt_text = "I can help inform you about your calendar events, try saying" \
+                    "What's my schedule today?"
+                    # \
+                    # "What events do i have in the evening? " \
+                    # "What's my 11 AM ?" \
+                    # "Who am I meeting with at Kellog ?" \
+                    # "What free time do i have today?" \
+                    # "Which 321 Office Hours should I attend? "
+
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
@@ -64,7 +83,7 @@ def get_welcome_response():
 
 def handle_session_end_request():
     card_title = "Session Ended"
-    speech_output = "Thank you for trying the Alexa Skills Kit sample. " \
+    speech_output = "Thank you for trying the Daily Briefing. " \
                     "Have a nice day! "
     # Setting this to true ends the session and exits the skill.
     should_end_session = True
@@ -72,9 +91,38 @@ def handle_session_end_request():
         card_title, speech_output, None, should_end_session))
 
 
+''' Get Events today'''
+def get_events_today_from_session(intent, session):
+    session_attributes = {}
+    reprompt_text = None
+
+    if session.get('attributes', {}) and "events_today" in session.get('attributes', {}):
+        events_today = session['attributes']['events_today']
+        num_events = len(events_today)
+
+        speech_output = "You have " + str(num_events) + " events today." \
+
+        for event in events:
+            for line in event.lines:
+                speech_output += line
+
+        should_end_session = False
+    else:
+        speech_output = "I'm not sure what your favorite color is. " \
+                        "You can say, my favorite color is red."
+        should_end_session = False
+
+    # Setting reprompt_text to None signifies that we do not want to reprompt
+    # the user. If the user does not respond or says something that is not
+    # understood, the session will end.
+    return build_response(session_attributes, build_speechlet_response(
+        intent['name'], speech_output, reprompt_text, should_end_session))
+
+
+
+''' Example of using session_attributes to set/get a string called favoriteColor '''
 def create_favorite_color_attributes(favorite_color):
     return {"favoriteColor": favorite_color}
-
 
 def set_color_in_session(intent, session):
     """ Sets the color in the session and prepares the speech to reply to the
@@ -129,6 +177,10 @@ def get_color_from_session(intent, session):
 
 def on_session_started(session_started_request, session):
     """ Called when the session starts """
+
+
+    ''' Initialize DailyBriefing, api services '''
+    db = DailyBriefing(demo=True)
 
     print("on_session_started requestId=" + session_started_request['requestId']
           + ", sessionId=" + session['sessionId'])
