@@ -51,6 +51,24 @@ def get_linkedin_profiles_by_query(query):
         pass
     return profiles
 
+def get_job_title_from_linked_in(name):
+    # print("get_job_title_from_linked_in", name)
+    job_title = "No Job Title Found"
+
+    linkedin_profiles = get_linkedin_profiles_by_query(name)
+
+    if linkedin_profiles:
+
+        # print(linkedin_profiles)
+
+        hcard = linkedin_profiles[0]['hcard']
+
+        if 'title' in hcard:
+            job_title = hcard['title']
+
+    return job_title
+
+
 # This doesn't work, linkedin's gotten a lot smarter about preventing scraping.
 # def get_linkedin_profile_details(profile_url):
 #     headers = {

@@ -11,6 +11,9 @@ import time_interface
 import datetime
 import json  # debug
 
+from LinkedInProfileUtil import *
+
+
 '''
     The Calendar Class
     # TODO Proper api calls for events of the day
@@ -447,7 +450,12 @@ class Event():
                         if i == (x['displayName'].encode('utf-8')) or i == ((x['displayName'].encode('utf-8')).split(' ')[0]):
                             #remove duplicate names, assuming first names are dups if they are equal
                             self.attendees.remove(i)
-                    self.attendees.append((x['displayName'].encode('utf-8')))
+
+                    attendee = x['displayName'].encode('utf-8')
+                    ''' Linkedin for attendees '''
+                    attendee += " ({})".format(get_job_title_from_linked_in(attendee))
+                    self.attendees.append(attendee)
+
 
 
     def __repr__(self, type='day'):

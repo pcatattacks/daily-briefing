@@ -1,27 +1,22 @@
 ''' Google API Modules '''
 from __future__ import print_function
 from googleapiclient.discovery import build
-# from apiclient import errors
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+''' Linkedin Search '''
 from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
-from LinkedInProfileUtil import get_linkedin_profiles_by_query
+from LinkedInProfileUtil import *
 import json
 
 '''
-    This seems to avoid encoding errors, but notice that there are
-    ascii codes in emails that are still not being encoded
-    (e.g. "they#39;ll" should be "they'll"). NEED TO FIX
-
+    This seems to avoid encoding errors,
+    TODO Fix ascii codes in emails that are still not being encoded (e.g. "they#39;ll" should be "they'll").
 '''
 # encoding=utf8
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
-
-
-from select import select
 
 ''' Text to Speech Modules '''
 from gtts import gTTS
@@ -130,12 +125,15 @@ class DailyBriefing:
         #     print(x)
 
         # print(''' Example usage of linkedin feature. ''')
-        # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
-        #
-        # speak(''' Next 10 events on the Calendar ''', "test_0")
-        # events = self.cal.get_next_ten_events()
-        # for i, event in enumerate(events):
-        #     speak(repr(event), "test_0")
+        print(get_linkedin_profiles_by_query("Pranav Dhingra"))
+        print(get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
+        print(get_job_title_from_linked_in("PranavDhingra2019@u.northwestern.edu"))
+        print(get_job_title_from_linked_in("Jeff Bezos"))
+
+        speak(''' Next 10 events on the Calendar ''', "test_0")
+        events = self.cal.get_next_ten_events()
+        for i, event in enumerate(events):
+            speak(repr(event), "test_0")
 
         # print(''' Example of text to speech ''')
         # speak(text='''Good morning. Would you like to go over your agenda for
@@ -172,38 +170,6 @@ class DailyBriefing:
             print(self.mail.ListMessagesWithLabels([label]))
 
 
-    # input: timeout (integer): specify number of seconds to wait, 0 = no timeout
-    def listen_for_user_input(self, timeout=120):
-
-        print("\n")
-
-        user_in = ""
-
-        ''' Wait indefinitely for user input '''
-        r, w, e = select([sys.stdin], [], [], timeout)
-
-        ''' If the user has said something, parse user input and follow their commands '''
-        if sys.stdin in r:
-            user_in = sys.stdin.readline().lower()
-
-        return user_in
-
-
-    def get_job_title_from_linked_in(self, name):
-        job_title = "No Job Title Found"
-
-        linkedin_profiles = get_linkedin_profiles_by_query(name)
-        # speak(linkedin_profiles, "linkedin_status_0")
-        job_title = ''
-        if linkedin_profiles:
-            print(linkedin_profiles)
-            hcard = linkedin_profiles[0]['hcard']
-            if 'title' in hcard:
-                job_title = hcard['title']
-
-        return job_title
-
-
     '''
         The parse_user_input function:
         input arg: user_in (string)
@@ -225,7 +191,7 @@ class DailyBriefing:
             # events_type = 'day'
             new_events = self.cal.get_todays_events()
             new_events_flag = 1
-            briefing_subject = "\nHere are today's events"
+            briefing_subject = "You have {} events today".format(len(new_events))
 
         elif "events at " in user_in:
             ''' user input e.g.:  what are my events at tech? '''
@@ -233,39 +199,39 @@ class DailyBriefing:
             print
             new_events = self.cal.getEventsAtLocation(location)
             new_events_flag = 1
-            briefing_subject = "\nHere are events at {}".format(location)
+            briefing_subject = "You have {} events at {}".format(len(new_events), location)
 
         elif "events with " in user_in:
             person = user_in.split("events with ")[1].rstrip() # location = tech
             new_events = self.cal.getEventsWithAttendees(person)
             new_events_flag = 1
-            briefing_subject = "\nHere are events with {}".format(person)
+            briefing_subject = "You have {} events at {}".format(len(new_events), person)
 
         elif "free time" in user_in:
             new_events = self.cal.get_free_time()
             new_events_flag =1
-            briefing_subject = "\nHere are times you have available:"
-            
+            briefing_subject = "Here are times you have available:"
+
         elif "evening" in user_in:
             new_events = self.cal.getEventsInRange("18", "23:59")
             new_events_flag = 1
-            briefing_subject = "\nHere are events in the evening"
+            briefing_subject = "You have {} events in the evening".format(len(new_events))
 
         elif "afternoon" in user_in:
             new_events = self.cal.getEventsInRange("12:01","17:59")
             new_events_flag = 1
-            briefing_subject = "\nHere are the events in the afternoon"
+            briefing_subject = "You have {} events in the afternoon".format(len(new_events))
 
         elif "morning" in user_in:
             new_events = self.cal.getEventsInRange("8","12")
             new_events_flag = 1
-            briefing_subject = "\nHere are events in the morning"
+            briefing_subject = "You have {} events in the morning".format(len(new_events))
 
         elif "events related to" in user_in:
             keyword = user_in.split("events related to ")[1].rstrip()
             new_events = self.cal.getEventsWithKeywordsInDescription(keyword)
             new_events_flag = 1
-            briefing_subject = "\nHere are events related to {}".format(keyword)
+            briefing_subject = "\nHere are {} events related to {}".format(len(new_events), keyword)
 
         elif any(word in user_in for word in ["am", "pm"]):
             ''' user input e.g.: what is my 10AM? '''
@@ -343,7 +309,7 @@ class DailyBriefing:
                         # speak(, linkedin_profiles)
 
         elif "wait" in user_in:
-            user_in_2 = self.listen_for_user_input()
+            user_in_2 = listen_for_user_input()
 
             new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in_2)
             user_in_2 = ""
@@ -373,10 +339,6 @@ class DailyBriefing:
                 if self.user.name == attendee:
                     event.attendees.remove(self.user.name)
 
-                # else:
-                    # ''' Linkedin for attendees '''
-                    # attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
-
             if event.creator == self.user.name:
                 event.creator = "you"
 
@@ -386,7 +348,6 @@ class DailyBriefing:
             else:
                 queries = event.keywords
 
-            # for query in queries:
             query = " ".join(queries)
             emails_matching_query = self.mail.ListMessagesMatchingQuery(query)
             if emails_matching_query:
@@ -421,14 +382,14 @@ class DailyBriefing:
         speak("Hello, {}!".format(self.user.name.split()[0]), "intro_0")
 
         ''' Wait indefinitely for user input '''
-        user_in = self.listen_for_user_input()
+        user_in = listen_for_user_input()
 
         ''' the big loop that runs the show '''
         while True:
 
             if not user_in:
                 ''' If we've passed the introduction, wait 10.5 seconds for user input '''
-                user_in = self.listen_for_user_input(10.5)
+                user_in = listen_for_user_input(10.5)
 
             ''' new_events_flag marks when user has made a request for a different set of events to be briefed on'''
             new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
@@ -448,7 +409,7 @@ class DailyBriefing:
                     ''' If first event, introduce type of list of events (e.g. events for today/this week/meetings) '''
                     if event_counter == 0:
                         speak(text=briefing_subject, title="briefing_subject")
-                    
+
                     print("\n")
 
                     ''' print and read the event out loud line by line '''
@@ -456,7 +417,7 @@ class DailyBriefing:
                         print_text_and_play_audio(repr(this_event.lines[i]), this_event.filenames[i])
 
                         ''' Handling interruptions... '''
-                        user_in = self.listen_for_user_input(timeout=1)
+                        user_in = listen_for_user_input(timeout=0.5)
                         new_events_flag, new_events, briefing_subject = self.parse_user_input(user_in)
                         user_in = ""
                         if new_events_flag:
@@ -469,7 +430,7 @@ class DailyBriefing:
                 prepared_events = []
 
                 ''' We have read all the events prepared for the briefing '''
-                speak(text="That concludes your briefing", title="conclusion")
+                speak(text="That is all of the events you requested", title="conclusion")
 
 
 
@@ -489,11 +450,6 @@ def main():
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing(demo=use_demo_config)
 
-    # print(daily_briefing.mail.ListMessagesWithLabels("INBOX"))
-
-    # print(daily_briefing.get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
-    # print(daily_briefing.get_job_title_from_linked_in("PranavDhingra2019@u.northwestern.edu"))
-    # print(daily_briefing.get_job_title_from_linked_in("Jeff Bezos"))
 
     if run_test:
         ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''

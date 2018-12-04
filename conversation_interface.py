@@ -5,7 +5,11 @@ from gtts import gTTS
 import os
 
 # Speech Recognition
-import speech_recognition as sr
+# import speech_recognition as sr
+
+# For reading userinput when given
+from select import select
+import sys
 
 # Use computer microphone as input audio source
 # mic = sr.Microphone()
@@ -20,6 +24,20 @@ import speech_recognition as sr
 #         audio = recognizer.listen(source)
 #     print("bar")
 #     return recognizer.recognize_google(audio)
+
+# input: timeout (integer): specify number of seconds to wait, 0 = no timeout
+def listen_for_user_input(timeout=120):
+
+    user_in = ""
+
+    ''' Wait indefinitely for user input '''
+    r, w, e = select([sys.stdin], [], [], timeout)
+
+    ''' If the user has said something, parse user input and follow their commands '''
+    if sys.stdin in r:
+        user_in = sys.stdin.readline().lower()
+
+    return user_in
 
 order_dict = {
                 0: "first",     1: "second",    2: "third",
