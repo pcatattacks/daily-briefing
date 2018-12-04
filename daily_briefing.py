@@ -6,7 +6,7 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 
 from config.search_credentials import GOOGLE_CUSTOM_SEARCH_API_KEY, CUSTOM_SEARCH_ENGINE_ID
-from LinkedInProfileUtil import get_linkedin_profiles_by_query
+from LinkedInProfileUtil import *
 import json
 
 '''
@@ -114,8 +114,11 @@ class DailyBriefing:
         print(self.mail.ListMessagesWithLabels(["UNREAD"]))
 
         # print(''' Example usage of linkedin feature. ''')
-        # print(get_linkedin_profiles_by_query("Pranav Dhingra"))
-        #
+        print(get_linkedin_profiles_by_query("Pranav Dhingra"))
+        print(get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
+        print(get_job_title_from_linked_in("PranavDhingra2019@u.northwestern.edu"))
+        print(get_job_title_from_linked_in("Jeff Bezos"))
+
         speak(''' Next 10 events on the Calendar ''', "test_0")
         events = self.cal.get_next_ten_events()
         for i, event in enumerate(events):
@@ -169,25 +172,6 @@ class DailyBriefing:
             user_in = sys.stdin.readline().lower()
 
         return user_in
-
-
-    def get_job_title_from_linked_in(self, name):
-        # print("get_job_title_from_linked_in", name)
-        job_title = "No Job Title Found"
-
-        linkedin_profiles = get_linkedin_profiles_by_query(name)
-
-        if linkedin_profiles:
-
-            # print(linkedin_profiles)
-
-            hcard = linkedin_profiles[0]['hcard']
-
-            if 'title' in hcard:
-                job_title = hcard['title']
-
-        return job_title
-
 
     '''
         The parse_user_input function:
@@ -353,10 +337,6 @@ class DailyBriefing:
                 if self.user.name == attendee:
                     event.attendees.remove(self.user.name)
 
-                else:
-                    ''' Linkedin for attendees '''
-                    attendee += " ({})".format(self.get_job_title_from_linked_in(attendee))
-
             if event.creator == self.user.name:
                 event.creator = "you"
 
@@ -469,11 +449,6 @@ def main():
     ''' Initialize a DailyBriefing object, google api services, and our calendar and mail objects'''
     daily_briefing = DailyBriefing(demo=use_demo_config)
 
-    # print(daily_briefing.mail.ListMessagesWithLabels("INBOX"))
-
-    # print(daily_briefing.get_job_title_from_linked_in("andreehrlich2019@u.northwestern.edu"))
-    # print(daily_briefing.get_job_title_from_linked_in("PranavDhingra2019@u.northwestern.edu"))
-    # print(daily_briefing.get_job_title_from_linked_in("Jeff Bezos"))
 
     if run_test:
         ''' Test run api calls without dealing with the daily_briefing.converse() protocol '''
