@@ -64,6 +64,7 @@ def prepare_list_of_events_to_brief(events):
             email_strings = ["Related Email:", first_email.subject, first_email.snippet]
             for email_str in email_strings:
                 email_str.encode('utf-8')
+
             event.lines += email_strings
 
         if "" in event.lines:
