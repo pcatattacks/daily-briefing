@@ -66,32 +66,16 @@ class DailyBriefing:
     def __init__(self, demo=False):
 
         ''' If demo, The George McGovern Test email is used, and credentials already exist in demo_config'''
-        if demo:
-            token_path = 'demo_config/token.json'
-            credentials_path = 'demo_config/credentials.json'
-            self.user = user_dict["George"]
+        self.demo = demo
 
-        else:
-            ''' Config must be set up manually, see readme. '''
-            token_path = 'config/token.json'
-            credentials_path = 'config/credentials.json'
+        ''' Initiate our Time Service '''
+        self.time_service = time_interface.TimeService(demo = self.demo)
 
-            ''' TODO create our little internal hand-made user profile automatically '''
-            self.user = user_dict["Andre"]
+        ''' Config folder and user profile depend on whether we want to demo'''
+        self.choose_token_and_credentials_config()
 
-        ''' Google API Authorization for EECS 338 Project'''
-        store = file.Storage(token_path)
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets(credentials_path, self.SCOPES)
-            creds = tools.run_flow(flow, store)
-
-        ''' Authenticate api services to Google Mail and Calendar '''
-        self.mail_service = build('gmail', 'v1', http=creds.authorize(Http()))
-        self.cal_service = build('calendar', 'v3', http=creds.authorize(Http()))
-
-        ''' Create Time Service '''
-        self.time_service = time_interface.TimeService(demo)
+        ''' Get Google API Authorization for Mail and Calendar'''
+        self.authorize_google_api_access()
 
         ''' Create a Mail & Calendar object '''
         self.mail = Mail(self.mail_service, self.user_id, self.user, self.time_service)
@@ -101,28 +85,46 @@ class DailyBriefing:
         profile = self.mail.get_user_profile()
         self.user.email = profile['emailAddress']
 
+        # ''' Get user profile from email address '''
+        # for name in user_dict:
+        #     if name in emailAddress:
+        #         self.user=user_dict[name]
+
+
+    ''' Choose Config folder and user profile depending on whether demo or not'''
+    def choose_token_and_credentials_config(self):
+        if self.demo:
+            self.token_path = 'demo_config/token.json'
+            self.credentials_path = 'demo_config/credentials.json'
+            self.user = user_dict["George"]
+
+        else:
+            ''' Config must be set up manually, see readme. '''
+            self.token_path = 'config/token.json'
+            self.credentials_path = 'config/credentials.json'
+            self.user = user_dict["Andre"]
+
+
+    ''' Google API Authorization for Mail and Calendar'''
+    def authorize_google_api_access(self):
+
+        ''' TODO: Does this need to change for a custom alexa skill? '''
+        store = file.Storage(self.token_path)
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets(self.credentials_path, self.SCOPES)
+            creds = tools.run_flow(flow, store)
+
+        ''' Authenticate api services to Google Mail and Calendar '''
+        self.mail_service = build('gmail', 'v1', http=creds.authorize(Http()))
+        self.cal_service = build('calendar', 'v3', http=creds.authorize(Http()))
+
 
     def test(self):
 
         speak("\n\nTESTING DAILY BRIEFING INTERFACE\n\n", "test_0")
 
         print(self.mail.ListMessagesWithLabels(["UNREAD"]))
-
-        # messages = self.mail.ListMessagesMatchingQuery("coffee")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("discussion")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Lunch")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Finance")
-        # for x in messages:
-        #     print(x)
-        # messages = self.mail.ListMessagesMatchingQuery("Dinner")
-        # for x in messages:
-        #     print(x)
 
         # print(''' Example usage of linkedin feature. ''')
         print(get_linkedin_profiles_by_query("Pranav Dhingra"))
@@ -148,11 +150,13 @@ class DailyBriefing:
 
 
         speak('''List messages that match query''', "test_7")
-        query_terms = ['Coffee', 'meet', 'Kellog', 'discuss', 'naf naf']
+
+        query_terms = ['meet', 'kellog', 'discuss', 'naf naf'
+        "coffee", "discussion", "Lunch", "Finance", "Dinner" ]
 
         for query in query_terms:
             print("\nterm \""+ query +"\" ...\n\n" , "test_8")
-            messages = self.mail.ListMessagesMatchingQuery(query)
+            messages = self.mail.ListMessagesMatchingQuery(query.lower())
             if messages:
                 for m in messages:
                     print(m, "test_9")
@@ -260,7 +264,7 @@ class DailyBriefing:
             index = words.index("about")
             proper_noun = " ".join(words[index+1:]).lower()
 
-            print("finding information about {}...".format(proper_noun))
+            speak("finding information about {}...".format(proper_noun), "linked_in0")
             for contact_name in self.cal.contacts: # check if proper noun is a contact name
                 # checking full name and first name
                 if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
@@ -271,12 +275,12 @@ class DailyBriefing:
                     if not linkedin_profiles:
                         linkedin_profiles = get_linkedin_profiles_by_query(proper_noun)
                     if not linkedin_profiles:
-                        speak("No linkedin profiles found related to {}.".format(proper_noun), "linked_in")
+                        speak("No linkedin profiles found related to {}.".format(proper_noun), "linked_in1")
                     else:
-                        speak(" --------------------------------------------------------------------", "linked_in")
-                        speak("I found these profiles on linkedin related to {}:".format(proper_noun), "linked_in")
-                        speak(json.dumps(linkedin_profiles, indent=2), "linked_in")
-                        speak(" --------------------------------------------------------------------", "linked_in")
+                        print(" -------------------------- LinkedIn ------------------------------------------")
+                        speak("I found these profiles on linkedin related to {}:".format(proper_noun), "linked_in2")
+                        speak(json.dumps(linkedin_profiles, indent=2), "linked_in3")
+                        print(" -------------------------- LinkedIn ------------------------------------------")
                         # speak(, linkedin_profiles)
                         # TODO - the above needs to be spoken
 
@@ -295,7 +299,7 @@ class DailyBriefing:
             index = words.index("is")
             proper_noun = " ".join(words[index+1:]).lower()
 
-            print("finding information about {}...".format(proper_noun))
+            speak("finding information about {}...".format(proper_noun), "linked_in6")
             for contact_name in self.cal.contacts: # check if proper noun is a contact name
                 # checking full name and first name
                 if proper_noun in contact_name or proper_noun.split(" ")[0] in contact_name:
@@ -306,14 +310,15 @@ class DailyBriefing:
                     if not linkedin_profiles:
                         linkedin_profiles = get_linkedin_profiles_by_query(proper_noun)
                     if not linkedin_profiles:
-                        print("No linkedin profiles found related to {}.".format(proper_noun))
+                        speak("No linkedin profiles found related to {}.".format(proper_noun), "linked_in7")
                     else:
-                        print(" --------------------------------------------------------------------")
-                        print("I found these profiles on linkedin related to {}:".format(proper_noun))
-                        print(json.dumps(linkedin_profiles, indent=2))
-                        print(" --------------------------------------------------------------------")
+                        print(" -------------------------- LinkedIn ------------------------------------------")
+                        speak("I found these profiles on linkedin related to {}:".format(proper_noun), "linked_in2")
+                        speak(json.dumps(linkedin_profiles, indent=2), "linked_in3")
+                        print(" -------------------------- LinkedIn ------------------------------------------")
                         # speak(, linkedin_profiles)
 
+            ''' Handle user commands for conversation '''
         elif "wait" in user_in:
             user_in_2 = listen_for_user_input()
             prepared_events, briefing_subject, command = self.parse_user_input(user_in_2)
@@ -325,14 +330,19 @@ class DailyBriefing:
         elif any(word in user_in for word in ["stop", "quit", "exit"]):
             command = "stop"
         else:
+            ''' Handle unknown input'''
             speak("sorry, I don't know what to do for {}".format(user_in), "response_0")
 
         ''' Preproccess and prepare events to speak out loud '''
         new_events = self.preprocess_list_of_events(new_events)
 
-        # prepared_events = prepare_list_of_events_to_speak(new_events, briefing_subject)
-        # if not prepared_events:
-        #     speak(briefing_subject, "response_0")
+        ''' Prepare a list of mp3 files to play during the briefing'''
+        prepared_events = prepare_list_of_events_to_speak(new_events, briefing_subject)
+
+        ''' Handle no events found case'''
+        if not prepared_events:
+            speak(briefing_subject, "response_0")
+
         return prepared_events, briefing_subject, command
 
 
