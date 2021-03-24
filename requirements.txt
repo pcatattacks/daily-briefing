@@ -128,7 +128,7 @@ pyttsx3==2.7
 pytz==2018.7
 requests==2.20.0
 requests-oauthlib==1.0.0
-rsa==4.0
+rsa==4.1
 six==1.11.0
 SpeechRecognition==3.8.1
 typing==3.6.6
