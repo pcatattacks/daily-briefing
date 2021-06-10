@@ -6,7 +6,7 @@ cachetools==2.1.0
 certifi==2018.10.15
 chardet==3.0.4
 Click==7.0
-Django==1.10.8
+Django==2.2.24
 django-classy-tags==0.8.0
 django-sekizai==0.10.0
 enum34==1.1.6
